@@ -7,6 +7,34 @@ saludables, acompañamiento preventivo, asistencia con IA segura y conexión con
 > los servicios de emergencia profesionales. Las funciones de IA son orientativas y de
 > acompañamiento, nunca diagnósticas ni prescriptivas.
 
+## Entornos desplegados
+
+| Servicio | URL |
+|----------|-----|
+| API backend (Vercel) | https://bienest-app.vercel.app/api/v1 |
+| Swagger (docs API) | https://bienest-app.vercel.app/docs |
+| Base de datos | Supabase (PostgreSQL) |
+| IA | DeepSeek (`deepseek-chat`) |
+
+Auto-deploy: cada push a `main` despliega el backend (Root Directory = `backend`).
+
+## Usuarios de prueba
+
+Todos con contraseña **`Bienestar123`** (crear/actualizar con `npm run seed:users`):
+
+| Correo | Rol |
+|--------|-----|
+| afiliado@demo.co | Afiliado |
+| operador@demo.co | Operador call center |
+| psicologo@demo.co | Psicólogo |
+| medico@demo.co | Médico |
+| admin@demo.co | Administrador EPS |
+| superadmin@demo.co | Superadministrador |
+| auditor@demo.co | Auditor |
+
+- **Panel web** (call center / admin): inicia sesión con `operador@demo.co` o `admin@demo.co`.
+- **App móvil** (afiliado): inicia sesión con `afiliado@demo.co`.
+
 ---
 
 ## Monorepo

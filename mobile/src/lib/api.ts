@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 
-// En dispositivo físico, reemplaza localhost por la IP de tu máquina.
-const API_URL = 'http://localhost:3000/api/v1';
+// API en producción (Vercel). Para desarrollo local usa la IP de tu máquina.
+const API_URL = 'https://bienest-app.vercel.app/api/v1';
 
 async function getToken(): Promise<string | null> {
   return SecureStore.getItemAsync('accessToken');
@@ -10,6 +10,15 @@ async function getToken(): Promise<string | null> {
 async function setTokens(accessToken: string, refreshToken: string) {
   await SecureStore.setItemAsync('accessToken', accessToken);
   await SecureStore.setItemAsync('refreshToken', refreshToken);
+}
+
+export async function isLoggedIn(): Promise<boolean> {
+  return !!(await getToken());
+}
+
+export async function signOut() {
+  await SecureStore.deleteItemAsync('accessToken');
+  await SecureStore.deleteItemAsync('refreshToken');
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -39,6 +48,14 @@ export const api = {
     const res = await request<{ accessToken: string; refreshToken: string }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
+    });
+    await setTokens(res.accessToken, res.refreshToken);
+    return res;
+  },
+  async register(input: { email: string; password: string; firstName: string; lastName: string }) {
+    const res = await request<{ accessToken: string; refreshToken: string }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(input),
     });
     await setTokens(res.accessToken, res.refreshToken);
     return res;
