@@ -1,0 +1,17 @@
+<svg width="360" height="96" viewBox="0 0 360 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1E9E8A"/>
+      <stop offset="1" stop-color="#5FE3C9"/>
+    </linearGradient>
+    <linearGradient id="tg" x1="104" y1="0" x2="340" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#11302B"/>
+      <stop offset="1" stop-color="#1E9E8A"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="8" width="80" height="80" rx="20" fill="url(#lg)"/>
+  <path d="M44 70c-9-7-46-31-46-63 0 0 0 0 0 0" fill="none"/>
+  <path d="M44 71c-8-6-30-22-30-44 0-12 9-20 20-20 7 0 10 4 10 4s3-4 10-4c11 0 20 8 20 20 0 22-22 38-30 44z" transform="translate(0,-4)" fill="#ffffff" opacity="0.96"/>
+  <path d="M44 50c0-12 5-21 15-26-2 12-7 20-15 26z" transform="translate(0,-4)" fill="#1E9E8A"/>
+  <text x="104" y="60" font-family="Segoe UI, Inter, system-ui, sans-serif" font-size="42" font-weight="800" fill="url(#tg)">Bienest<tspan fill="#1E9E8A">APP</tspan></text>
+</svg>
