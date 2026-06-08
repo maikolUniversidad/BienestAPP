@@ -177,6 +177,7 @@ model User {
   exerciseLogs     ExerciseLog[]
   habits           Habit[]
   goals            Goal[]
+  medicationItems  MedicationItem[]
   pet              VirtualPet?
   achievements     UserAchievementCard[]
   testResults      TestResult[]
@@ -427,6 +428,39 @@ model ExerciseLog {
   createdAt  DateTime @default(now())
 
   @@index([userId, type, createdAt])
+}
+
+model MedicationItem {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedBy   String? // userId del profesional que lo asignó (si aplica)
+  name         String
+  dose         String // "1 tableta", "50 mg"
+  route        String   @default("oral") // oral | inyectable | tópico | otro
+  schedule     String[] // horarios "HH:MM" del día
+  instructions String?
+  startDate    DateTime?
+  endDate      DateTime?
+  active       Boolean  @default(true)
+  intakes      MedicationIntake[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId, active])
+}
+
+model MedicationIntake {
+  id           String         @id @default(cuid())
+  itemId       String
+  item         MedicationItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  userId       String
+  scheduledFor DateTime // fecha+hora prevista de la dosis
+  status       String         @default("TAKEN") // TAKEN | LATE | MISSED
+  takenAt      DateTime       @default(now())
+
+  @@index([userId, scheduledFor])
+  @@index([itemId])
 }
 
 model Goal {

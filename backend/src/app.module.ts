@@ -30,6 +30,7 @@ import { TestsModule } from './tests/tests.module';
 import { ContentModule } from './content/content.module';
 import { GoalsModule } from './goals/goals.module';
 import { EmergencyContactsModule } from './emergency-contacts/emergency-contacts.module';
+import { MedicationsModule } from './medications/medications.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { EmergencyContactsModule } from './emergency-contacts/emergency-contacts
     ContentModule,
     GoalsModule,
     EmergencyContactsModule,
+    MedicationsModule,
   ],
   controllers: [AppController],
   providers: [

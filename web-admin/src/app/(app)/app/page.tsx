@@ -210,6 +210,7 @@ export default function AffiliateHome() {
           <div style={{ display: 'grid', gap: 10, marginTop: 8 }}>
             <QuickAction href="/diario" ic="diario" label="Escribir en mi diario" />
             <QuickAction href="/asistente" ic="ia" label="Hablar con el asistente" />
+            <QuickAction href="/medicacion" ic="med" label="Mi medicación" />
             <QuickAction href="/habitos" ic="habits" label="Ver mis hábitos" />
             <QuickAction href="/biblioteca" ic="biblioteca" label="Recursos y actividades" />
           </div>

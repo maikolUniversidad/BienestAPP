@@ -152,6 +152,17 @@ export const api = {
   updateGoal: (id: string, patch: { title?: string; progress?: number; status?: string }) =>
     request(`/goals/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   deleteGoal: (id: string) => request(`/goals/${id}`, { method: 'DELETE' }),
+  // Medicación
+  medCatalog: () => request<any[]>('/medications/catalog'),
+  medItems: () => request<any[]>('/medications/items'),
+  addMed: (m: { name: string; dose: string; route?: string; schedule: string[]; instructions?: string }) =>
+    request('/medications/items', { method: 'POST', body: JSON.stringify(m) }),
+  removeMed: (id: string) => request(`/medications/items/${id}`, { method: 'DELETE' }),
+  medToday: () => request<{ doses: any[]; taken: number; total: number }>('/medications/today'),
+  markIntake: (itemId: string, time: string) =>
+    request('/medications/intakes', { method: 'POST', body: JSON.stringify({ itemId, time }) }),
+  medHistory: () => request<any[]>('/medications/history'),
+  medAdherence: () => request<{ taken: number; expected: number; percent: number; activeItems: number }>('/medications/adherence'),
   sos: (type: string, note?: string) =>
     request<any>('/emergency/sos', { method: 'POST', body: JSON.stringify({ type, note }) }),
 };

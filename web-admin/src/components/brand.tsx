@@ -25,6 +25,7 @@ const ICONS: Record<string, ReactNode> = {
   alerts: <><path d="M12 3l9 16H3z" /><path d="M12 10v4M12 17h.01" /></>,
   metas: <><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3" /></>,
   progreso: <><path d="M3 17l6-6 4 4 7-7" /><path d="M17 7h4v4" /></>,
+  med: <><rect x="3" y="8" width="18" height="8" rx="4" /><path d="M12 8v8" /></>,
   audit: <><path d="M4 5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" /><path d="M14 3v5h5M9 13h6M9 17h4" /></>,
   user: <><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 4-6 8-6s8 2 8 6" /></>,
 };
