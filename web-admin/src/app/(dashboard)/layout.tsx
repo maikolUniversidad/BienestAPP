@@ -4,12 +4,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getRoles, logout } from '../../lib/api';
+import { Hilo, Ico } from '../../components/brand';
 
 const NAV = [
-  { href: '/overview', label: 'Resumen', ic: '📊', roles: ['EPS_ADMIN', 'SUPERADMIN', 'AUDITOR'] },
-  { href: '/callcenter', label: 'Call Center', ic: '📞', roles: ['CALLCENTER_OPERATOR', 'PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
-  { href: '/alerts', label: 'Alertas de riesgo', ic: '🚨', roles: ['EPS_ADMIN', 'PSYCHOLOGIST', 'PHYSICIAN', 'SUPERADMIN'] },
-  { href: '/audit', label: 'Auditoría', ic: '🗂️', roles: ['AUDITOR', 'SUPERADMIN'] },
+  { href: '/overview', label: 'Resumen', ic: 'dashboard', roles: ['EPS_ADMIN', 'SUPERADMIN', 'AUDITOR'] },
+  { href: '/callcenter', label: 'Call Center', ic: 'call', roles: ['CALLCENTER_OPERATOR', 'PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
+  { href: '/alerts', label: 'Alertas de riesgo', ic: 'alerts', roles: ['EPS_ADMIN', 'PSYCHOLOGIST', 'PHYSICIAN', 'SUPERADMIN'] },
+  { href: '/audit', label: 'Auditoría', ic: 'audit', roles: ['AUDITOR', 'SUPERADMIN'] },
 ];
 
 const TITLES: Record<string, string> = {
@@ -35,14 +36,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="shell">
       <aside className="sidebar">
         <div className="brand">
-          <img src="/logo-ai.png" alt="" />
+          <Hilo size={34} sprout="#9FD8B0" />
           <b>Bienest<span>APP</span></b>
         </div>
         <div className="nav-group-label">Operación</div>
         <nav style={{ display: 'grid', gap: 4 }}>
           {visible.map((n) => (
             <Link key={n.href} href={n.href} className={`nav-item ${pathname.startsWith(n.href) ? 'active' : ''}`}>
-              <span className="ic">{n.ic}</span>
+              <span className="ic"><Ico k={n.ic} /></span>
               {n.label}
             </Link>
           ))}
@@ -65,7 +66,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <nav className="bottom-nav">
         {visible.map((n) => (
           <Link key={n.href} href={n.href} className={pathname.startsWith(n.href) ? 'active' : ''}>
-            <span className="ic">{n.ic}</span>
+            <span className="ic"><Ico k={n.ic} /></span>
             <span>{n.label.split(' ')[0]}</span>
           </Link>
         ))}

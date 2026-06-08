@@ -4,14 +4,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { logout, api } from '../../lib/api';
+import { Hilo, Ico } from '../../components/brand';
 
 const NAV = [
-  { href: '/app', label: 'Inicio', ic: '🏠' },
-  { href: '/diario', label: 'Diario y ánimo', ic: '📔' },
-  { href: '/asistente', label: 'Asistente IA', ic: '💬' },
-  { href: '/habitos', label: 'Hábitos', ic: '🔥' },
-  { href: '/alimentacion', label: 'Alimentación', ic: '🍎' },
-  { href: '/biblioteca', label: 'Biblioteca', ic: '🧘' },
+  { href: '/app', label: 'Inicio', ic: 'inicio' },
+  { href: '/diario', label: 'Diario y ánimo', ic: 'diario' },
+  { href: '/asistente', label: 'Asistente IA', ic: 'ia' },
+  { href: '/habitos', label: 'Hábitos', ic: 'habits' },
+  { href: '/alimentacion', label: 'Alimentación', ic: 'food' },
+  { href: '/biblioteca', label: 'Biblioteca', ic: 'biblioteca' },
 ];
 
 const SOS_TYPES: [string, string][] = [
@@ -39,14 +40,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="shell affiliate">
       <aside className="sidebar">
         <div className="brand">
-          <img src="/logo-ai.png" alt="" />
-          <b>Bienest<span style={{ color: '#11302B' }}>APP</span></b>
+          <Hilo size={34} sprout="#9FD8B0" />
+          <b>Bienest<span>APP</span></b>
         </div>
-        <div className="nav-group-label" style={{ color: 'rgba(255,255,255,.6)' }}>Mi bienestar</div>
+        <div className="nav-group-label">Mi bienestar</div>
         <nav style={{ display: 'grid', gap: 4 }}>
           {NAV.map((n) => (
             <Link key={n.href} href={n.href} className={`nav-item ${pathname === n.href ? 'active' : ''}`}>
-              <span className="ic">{n.ic}</span>{n.label}
+              <span className="ic"><Ico k={n.ic} /></span>{n.label}
             </Link>
           ))}
         </nav>
@@ -70,7 +71,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <nav className="bottom-nav">
         {NAV.map((n) => (
           <Link key={n.href} href={n.href} className={pathname === n.href ? 'active' : ''}>
-            <span className="ic">{n.ic}</span>
+            <span className="ic"><Ico k={n.ic} /></span>
             <span>{n.label.split(' ')[0]}</span>
           </Link>
         ))}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { api } from '../lib/api';
+import { Hilo } from '../components/brand';
 
 const DEMO: [string, string][] = [
   ['afiliado@demo.co', 'Afiliado'],
@@ -39,10 +40,10 @@ export default function LoginPage() {
     <main className="auth-wrap">
       <form className="auth-card" onSubmit={submit}>
         <div className="auth-logo">
-          <img src="/logo-ai.png" alt="BienestAPP" />
+          <Hilo size={40} />
           <b>Bienest<span>APP</span></b>
         </div>
-        <p className="muted" style={{ marginBottom: 18 }}>Bienestar · Call Center · Administración</p>
+        <p className="muted" style={{ marginBottom: 18 }}>El hilo que te acompaña · Bienestar · Call Center</p>
 
         <input className="field" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Correo" />
         <input className="field" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Contraseña" />

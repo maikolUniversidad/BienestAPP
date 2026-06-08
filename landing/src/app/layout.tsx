@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: 'BienestAPP — SuperApp de Bienestar y Salud Preventiva | Nueva EPS',
   description:
     'Bienestar, salud mental, hábitos saludables y acompañamiento preventivo con IA segura, botón SOS y call center. Para afiliados de Nueva EPS.',
-  icons: { icon: '/logo-ai.png' },
+  icons: { icon: '/icon.svg' },
   openGraph: {
     title: 'BienestAPP — Tu bienestar, acompañado',
     description:
