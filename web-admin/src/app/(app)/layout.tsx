@@ -7,12 +7,14 @@ import { logout, api } from '../../lib/api';
 import { Hilo, Ico } from '../../components/brand';
 
 const NAV = [
-  { href: '/app', label: 'Inicio', ic: 'inicio' },
-  { href: '/diario', label: 'Diario y ánimo', ic: 'diario' },
-  { href: '/asistente', label: 'Asistente IA', ic: 'ia' },
-  { href: '/habitos', label: 'Hábitos', ic: 'habits' },
-  { href: '/alimentacion', label: 'Alimentación', ic: 'food' },
-  { href: '/biblioteca', label: 'Biblioteca', ic: 'biblioteca' },
+  { href: '/app', label: 'Inicio', ic: 'inicio', primary: true },
+  { href: '/diario', label: 'Diario y ánimo', ic: 'diario', primary: true },
+  { href: '/asistente', label: 'Asistente IA', ic: 'ia', primary: true },
+  { href: '/habitos', label: 'Hábitos', ic: 'habits', primary: true },
+  { href: '/progreso', label: 'Progreso', ic: 'progreso', primary: true },
+  { href: '/metas', label: 'Metas', ic: 'metas', primary: false },
+  { href: '/alimentacion', label: 'Alimentación', ic: 'food', primary: false },
+  { href: '/biblioteca', label: 'Biblioteca', ic: 'biblioteca', primary: false },
 ];
 
 const SOS_TYPES: [string, string][] = [
@@ -67,9 +69,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="content">{children}</div>
       </div>
 
-      {/* Menú inferior (móvil) */}
+      {/* Menú inferior (móvil) — solo las secciones principales */}
       <nav className="bottom-nav">
-        {NAV.map((n) => (
+        {NAV.filter((n) => n.primary).map((n) => (
           <Link key={n.href} href={n.href} className={pathname === n.href ? 'active' : ''}>
             <span className="ic"><Ico k={n.ic} /></span>
             <span>{n.label.split(' ')[0]}</span>

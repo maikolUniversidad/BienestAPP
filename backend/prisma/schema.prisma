@@ -176,6 +176,7 @@ model User {
   foodLogs         FoodLog[]
   exerciseLogs     ExerciseLog[]
   habits           Habit[]
+  goals            Goal[]
   pet              VirtualPet?
   achievements     UserAchievementCard[]
   testResults      TestResult[]
@@ -426,6 +427,22 @@ model ExerciseLog {
   createdAt  DateTime @default(now())
 
   @@index([userId, type, createdAt])
+}
+
+model Goal {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String
+  type       String   @default("habit") // emotional | habit | physical | sleep | nutrition | other
+  frequency  String   @default("daily") // daily | weekly | once
+  targetDate DateTime?
+  progress   Int      @default(0) // 0..100
+  status     String   @default("active") // active | completed | archived
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId, status])
 }
 
 model Habit {

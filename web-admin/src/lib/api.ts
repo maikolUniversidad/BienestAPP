@@ -114,6 +114,14 @@ export const api = {
     request<any>('/food/analyze', { method: 'POST', body: JSON.stringify({ description }) }),
   pet: () => request<any>('/pet'),
   content: (type?: string) => request<any[]>(`/content${type ? `?type=${type}` : ''}`),
+  // Metas
+  goals: () => request<any[]>('/goals'),
+  goalStats: () => request<{ active: number; completed: number }>('/goals/stats'),
+  createGoal: (g: { title: string; type?: string; frequency?: string; targetDate?: string }) =>
+    request('/goals', { method: 'POST', body: JSON.stringify(g) }),
+  updateGoal: (id: string, patch: { title?: string; progress?: number; status?: string }) =>
+    request(`/goals/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
+  deleteGoal: (id: string) => request(`/goals/${id}`, { method: 'DELETE' }),
   sos: (type: string, note?: string) =>
     request<any>('/emergency/sos', { method: 'POST', body: JSON.stringify({ type, note }) }),
 };

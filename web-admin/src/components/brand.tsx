@@ -23,6 +23,8 @@ const ICONS: Record<string, ReactNode> = {
   habits: <><path d="M3 13c4 0 4-6 8-6s4 6 8 6" /><circle cx="6" cy="18" r="1.5" /><circle cx="12" cy="18" r="1.5" /><circle cx="18" cy="18" r="1.5" /></>,
   biblioteca: <path d="M4 5a2 2 0 0 1 2-2h5v18H6a2 2 0 0 0-2 2zM20 5a2 2 0 0 0-2-2h-5v18h5a2 2 0 0 1 2 2z" />,
   alerts: <><path d="M12 3l9 16H3z" /><path d="M12 10v4M12 17h.01" /></>,
+  metas: <><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3" /></>,
+  progreso: <><path d="M3 17l6-6 4 4 7-7" /><path d="M17 7h4v4" /></>,
   audit: <><path d="M4 5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" /><path d="M14 3v5h5M9 13h6M9 17h4" /></>,
   user: <><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 4-6 8-6s8 2 8 6" /></>,
 };

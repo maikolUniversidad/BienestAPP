@@ -28,6 +28,7 @@ import { FoodModule } from './food/food.module';
 import { ExerciseModule } from './exercise/exercise.module';
 import { TestsModule } from './tests/tests.module';
 import { ContentModule } from './content/content.module';
+import { GoalsModule } from './goals/goals.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { ContentModule } from './content/content.module';
     ExerciseModule,
     TestsModule,
     ContentModule,
+    GoalsModule,
   ],
   controllers: [AppController],
   providers: [
