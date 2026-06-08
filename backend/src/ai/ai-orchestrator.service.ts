@@ -40,10 +40,15 @@ export class AiOrchestratorService {
     private readonly escalation: EscalationService,
   ) {}
 
-  /** Procesa un mensaje del afiliado en una conversación de acompañamiento. */
+  /**
+   * Procesa un mensaje del afiliado en una conversación de acompañamiento.
+   * Si `conversationId` es null → conversación TEMPORAL/ANÓNIMA: no se persiste el contenido
+   * (no se guardan AIMessage), pero la seguridad sigue intacta: clasificación de riesgo,
+   * protocolo de crisis y registro de decisión (con hash, sin contenido) siempre se ejecutan.
+   */
   async handleChatMessage(params: {
     userId: string;
-    conversationId: string;
+    conversationId: string | null;
     history: LlmMessage[];
     userText: string;
     attachments?: Attachment[];
@@ -84,7 +89,7 @@ export class AiOrchestratorService {
       });
 
       await this.logDecision({
-        conversationId: params.conversationId,
+        conversationId: params.conversationId ?? undefined,
         inputHash,
         risk,
         promptVersion: promptSpec.version,
@@ -94,7 +99,9 @@ export class AiOrchestratorService {
         latencyMs: Date.now() - started,
       });
 
-      await this.persistMessages(params.conversationId, clean, protocol.containmentMessage, risk.level, theme, att);
+      if (params.conversationId) {
+        await this.persistMessages(params.conversationId, clean, protocol.containmentMessage, risk.level, theme, att);
+      }
 
       return { content: protocol.containmentMessage, riskLevel: risk.level, emotionalTheme: theme, crisisProtocol: protocol };
     }
@@ -125,7 +132,7 @@ export class AiOrchestratorService {
 
     // [6] Registro + persistencia
     await this.logDecision({
-      conversationId: params.conversationId,
+      conversationId: params.conversationId ?? undefined,
       inputHash,
       risk,
       promptVersion: promptSpec.version,
@@ -135,7 +142,9 @@ export class AiOrchestratorService {
       latencyMs: Date.now() - started,
     });
 
-    await this.persistMessages(params.conversationId, clean, validated.content, risk.level, theme, att);
+    if (params.conversationId) {
+      await this.persistMessages(params.conversationId, clean, validated.content, risk.level, theme, att);
+    }
 
     return { content: validated.content, riskLevel: risk.level, emotionalTheme: theme };
   }

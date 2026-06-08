@@ -14,8 +14,11 @@ const THEME_LABEL: Record<string, string> = {
 };
 
 export default function Asistente() {
+  const [mode, setMode] = useState<'persistent' | 'ephemeral'>('persistent');
   const [cid, setCid] = useState<string | null>(null);
   const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [convos, setConvos] = useState<any[]>([]);
+  const [showHist, setShowHist] = useState(false);
   const [input, setInput] = useState('');
   const [pending, setPending] = useState<Att[]>([]);
   const [crisis, setCrisis] = useState<any>(null);
@@ -28,7 +31,39 @@ export default function Asistente() {
   const recogRef = useRef<any>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  useEffect(() => { api.startConversation().then((c) => setCid(c.id)).catch(() => undefined); }, []);
+  const ephemeral = mode === 'ephemeral';
+
+  async function loadConvos() { setConvos(await api.listConversations().catch(() => [])); }
+
+  async function newConversation() {
+    try {
+      const c = await api.startConversation();
+      setMode('persistent'); setCid(c.id); setMsgs([]); setCrisis(null); setShowHist(false);
+      loadConvos();
+    } catch { /* noop */ }
+  }
+  function startEphemeral() {
+    setMode('ephemeral'); setCid(null); setMsgs([]); setCrisis(null); setShowHist(false); setPending([]);
+  }
+  async function openConversation(id: string) {
+    try {
+      const c = await api.getConversation(id);
+      setMode('persistent'); setCid(id); setCrisis(null); setShowHist(false);
+      setMsgs((c.messages ?? []).map((m: any) => ({
+        role: m.role,
+        content: m.content,
+        theme: m.emotionalTheme,
+        atts: (m.attachments ?? []).filter((a: any) => a.url).map((a: any) => ({ type: a.type, path: a.path, previewUrl: a.url })),
+      })));
+    } catch { /* noop */ }
+  }
+  async function removeConv(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    await api.deleteConversation(id).catch(() => undefined);
+    if (id === cid) newConversation(); else loadConvos();
+  }
+
+  useEffect(() => { loadConvos(); newConversation(); /* eslint-disable-next-line */ }, []);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs, crisis]);
 
   async function onPhoto(e: React.ChangeEvent<HTMLInputElement>) {
@@ -44,21 +79,24 @@ export default function Asistente() {
 
   async function startRec() {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream; chunksRef.current = [];
-      const rec = new MediaRecorder(stream);
-      rec.ondataavailable = (ev) => ev.data.size && chunksRef.current.push(ev.data);
-      rec.onstop = async () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        setUploading(true);
-        try {
-          const a = await uploadChatFile(blob, 'audio', 'webm');
-          setPending((p) => [...p, { ...a, previewUrl: URL.createObjectURL(blob) }]);
-        } catch { /* noop */ } finally { setUploading(false); }
-        streamRef.current?.getTracks().forEach((t) => t.stop());
-      };
-      rec.start(); recRef.current = rec;
       const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      // En modo temporal: solo transcripción (sin subir ni guardar audio).
+      if (!ephemeral) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        streamRef.current = stream; chunksRef.current = [];
+        const rec = new MediaRecorder(stream);
+        rec.ondataavailable = (ev) => ev.data.size && chunksRef.current.push(ev.data);
+        rec.onstop = async () => {
+          const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+          setUploading(true);
+          try {
+            const a = await uploadChatFile(blob, 'audio', 'webm');
+            setPending((p) => [...p, { ...a, previewUrl: URL.createObjectURL(blob) }]);
+          } catch { /* noop */ } finally { setUploading(false); }
+          streamRef.current?.getTracks().forEach((t) => t.stop());
+        };
+        rec.start(); recRef.current = rec;
+      }
       if (SR) {
         const recog = new SR(); recog.lang = 'es-CO'; recog.continuous = true; recog.interimResults = true;
         recog.onresult = (e: any) => { let t = ''; for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript; setInput(t); };
@@ -71,12 +109,20 @@ export default function Asistente() {
 
   async function send() {
     const text = input.trim();
-    if ((!text && pending.length === 0) || !cid || busy) return;
+    if ((!text && pending.length === 0) || busy) return;
     setInput(''); setBusy(true);
     const sentAtts = pending; setPending([]);
-    setMsgs((m) => [...m, { role: 'user', content: text, atts: sentAtts }]);
+    const next = [...msgs, { role: 'user' as const, content: text, atts: sentAtts }];
+    setMsgs(next);
     try {
-      const res = await api.sendMessage(cid, text, sentAtts.map(({ type, path }) => ({ type, path })));
+      let res;
+      if (ephemeral) {
+        res = await api.sendEphemeral(text, msgs.map((m) => ({ role: m.role, content: m.content })));
+      } else {
+        if (!cid) { setBusy(false); return; }
+        res = await api.sendMessage(cid, text, sentAtts.map(({ type, path }) => ({ type, path })));
+        loadConvos(); // refresca títulos/orden del historial
+      }
       setMsgs((m) => [...m, { role: 'assistant', content: res.message.content, theme: res.emotionalTheme }]);
       if (res.crisisProtocol?.active) setCrisis(res.crisisProtocol);
     } catch {
@@ -88,8 +134,42 @@ export default function Asistente() {
 
   return (
     <>
-      <div className="page-head"><h2>Asistente de bienestar</h2><p>Escribe, comparte una foto o una nota de voz. Te acompaño con IA segura.</p></div>
-      <div className="disclaimer-bar">Acompañamiento de bienestar · No reemplaza atención médica ni psicológica profesional.</div>
+      <div className="page-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10 }}>
+        <div>
+          <h2>Asistente de bienestar</h2>
+          <p>Escribe, comparte una foto o una nota de voz. Te acompaño con IA segura.</p>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button className="btn btn-ghost btn-sm" onClick={() => { loadConvos(); setShowHist((s) => !s); }}>🕘 Historial</button>
+          <button className="btn btn-ghost btn-sm" onClick={newConversation}>＋ Nueva</button>
+          <button className={`btn btn-sm ${ephemeral ? 'btn-primary' : 'btn-ghost'}`} onClick={startEphemeral} title="No se guarda; desaparece al salir">🕶️ Temporal</button>
+        </div>
+      </div>
+
+      {showHist && (
+        <div className="card" style={{ marginBottom: 14, maxHeight: 260, overflowY: 'auto' }}>
+          <div className="muted" style={{ fontSize: 12, marginBottom: 8 }}>Conversaciones guardadas</div>
+          {convos.length === 0 && <p className="muted">Aún no tienes conversaciones guardadas.</p>}
+          {convos.map((c) => (
+            <div key={c.id} onClick={() => openConversation(c.id)}
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '10px 8px', borderBottom: '1px solid var(--line)', cursor: 'pointer', background: c.id === cid ? 'var(--durazno)' : 'transparent', borderRadius: 8 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 600, color: 'var(--tinta)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.title || 'Conversación'}</div>
+                <div className="muted" style={{ fontSize: 12 }}>{new Date(c.lastMessageAt).toLocaleDateString()} · {c.messageCount} mensajes</div>
+              </div>
+              <button className="link" onClick={(e) => removeConv(c.id, e)} title="Eliminar" style={{ flexShrink: 0 }}>🗑️</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {ephemeral ? (
+        <div className="disclaimer-bar" style={{ background: '#EAEFF7', color: 'var(--azul-deep)' }}>
+          🕶️ Conversación temporal · anónima — <b>no se guarda</b> y desaparece cuando sales o inicias otra.
+        </div>
+      ) : (
+        <div className="disclaimer-bar">Acompañamiento de bienestar · No reemplaza atención médica ni psicológica profesional.</div>
+      )}
 
       <div className="chat-box">
         <div className="chat-msgs">
@@ -123,7 +203,7 @@ export default function Asistente() {
           <div ref={endRef} />
         </div>
 
-        {pending.length > 0 && (
+        {pending.length > 0 && !ephemeral && (
           <div style={{ display: 'flex', gap: 8, padding: '8px 14px', flexWrap: 'wrap', borderTop: '1px solid var(--line)' }}>
             {pending.map((a, i) => (
               a.type === 'image'
@@ -135,9 +215,11 @@ export default function Asistente() {
         )}
 
         <div className="chat-input">
-          <label className="btn btn-ghost btn-sm" style={{ cursor: 'pointer' }} title="Foto">
-            📷<input type="file" accept="image/*" hidden onChange={onPhoto} />
-          </label>
+          {!ephemeral && (
+            <label className="btn btn-ghost btn-sm" style={{ cursor: 'pointer' }} title="Foto">
+              📷<input type="file" accept="image/*" hidden onChange={onPhoto} />
+            </label>
+          )}
           {!recording
             ? <button className="btn btn-ghost btn-sm" onClick={startRec} title="Grabar audio">🎙️</button>
             : <button className="btn btn-danger btn-sm" onClick={stopRec}>⏹️</button>}
@@ -145,7 +227,7 @@ export default function Asistente() {
             onKeyDown={(e) => e.key === 'Enter' && send()} placeholder={recording ? 'Escuchando…' : 'Escribe un mensaje…'} />
           <button className="btn btn-primary" onClick={send} disabled={busy || uploading || recording}>{busy ? '…' : 'Enviar'}</button>
         </div>
-        {!SRsupported && <p className="muted" style={{ fontSize: 11, padding: '0 14px 8px' }}>La transcripción en vivo funciona mejor en Chrome/Android; el audio se envía igualmente.</p>}
+        {!SRsupported && <p className="muted" style={{ fontSize: 11, padding: '0 14px 8px' }}>La transcripción en vivo funciona mejor en Chrome/Android.</p>}
       </div>
     </>
   );

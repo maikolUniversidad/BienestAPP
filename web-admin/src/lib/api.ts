@@ -87,6 +87,14 @@ export const api = {
     }),
   journalWeekly: () => request<any>('/journal/summary/weekly'),
   startConversation: () => request<{ id: string }>('/ai/conversations', { method: 'POST', body: '{}' }),
+  listConversations: () => request<any[]>('/ai/conversations'),
+  getConversation: (id: string) => request<any>(`/ai/conversations/${id}`),
+  deleteConversation: (id: string) => request(`/ai/conversations/${id}`, { method: 'DELETE' }),
+  sendEphemeral: (content: string, history: { role: string; content: string }[]) =>
+    request<{ message: { content: string }; riskLevel: string; emotionalTheme?: string; crisisProtocol?: any }>(
+      '/ai/ephemeral/messages',
+      { method: 'POST', body: JSON.stringify({ content, history }) },
+    ),
   sendMessage: (id: string, content: string, attachments?: any[]) =>
     request<{ message: { content: string }; riskLevel: string; emotionalTheme?: string; crisisProtocol?: any }>(
       `/ai/conversations/${id}/messages`,

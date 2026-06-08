@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { IsArray, IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -21,6 +21,11 @@ class SendMessageDto {
   @IsOptional()
   @IsArray()
   attachments?: AttachmentDto[];
+}
+
+class EphemeralMessageDto {
+  @IsOptional() @IsString() @MaxLength(4000) content?: string;
+  @IsOptional() @IsArray() history?: { role: 'user' | 'assistant'; content: string }[];
 }
 
 class StartConversationDto {
@@ -55,6 +60,56 @@ export class AiController {
     });
   }
 
+  /** Historial: lista de conversaciones guardadas del usuario, con vista previa. */
+  @Get('conversations')
+  async list(@CurrentUser('id') userId: string) {
+    const convos = await this.prisma.aIConversation.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: {
+        messages: { orderBy: { createdAt: 'desc' }, take: 1, select: { content: true, createdAt: true } },
+        _count: { select: { messages: true } },
+      },
+    });
+    return convos.map((c) => ({
+      id: c.id,
+      title: c.title,
+      createdAt: c.createdAt,
+      messageCount: c._count.messages,
+      lastMessageAt: c.messages[0]?.createdAt ?? c.createdAt,
+      preview: c.messages[0]?.content?.slice(0, 80) ?? '',
+    }));
+  }
+
+  @Delete('conversations/:id')
+  async remove(@CurrentUser('id') userId: string, @Param('id') id: string) {
+    await this.prisma.aIConversation.deleteMany({ where: { id, userId } });
+    return { success: true };
+  }
+
+  /** Conversación TEMPORAL / ANÓNIMA: no se guarda. El historial lo mantiene el cliente. */
+  @Post('ephemeral/messages')
+  async ephemeral(@CurrentUser('id') userId: string, @Body() dto: EphemeralMessageDto) {
+    const history: LlmMessage[] = (dto.history ?? []).map((m) => ({
+      role: m.role as LlmMessage['role'],
+      content: m.content,
+    }));
+    const reply = await this.orchestrator.handleChatMessage({
+      userId,
+      conversationId: null, // efímera: no persiste contenido
+      history,
+      userText: dto.content ?? '',
+      attachments: [],
+    });
+    return {
+      message: { role: 'assistant', content: reply.content },
+      riskLevel: reply.riskLevel,
+      emotionalTheme: reply.emotionalTheme,
+      crisisProtocol: reply.crisisProtocol,
+    };
+  }
+
   @Get('conversations/:id')
   async getOne(@CurrentUser('id') userId: string, @Param('id') id: string) {
     const convo = await this.prisma.aIConversation.findFirst({
@@ -83,6 +138,14 @@ export class AiController {
       include: { messages: { orderBy: { createdAt: 'asc' }, take: 20 } },
     });
     if (!convo) return { error: 'Conversación no encontrada' };
+
+    // Auto-título con el primer mensaje del usuario (historial legible).
+    if (convo.messages.length === 0 && dto.content?.trim()) {
+      await this.prisma.aIConversation.update({
+        where: { id },
+        data: { title: dto.content.trim().slice(0, 48) },
+      });
+    }
 
     const history: LlmMessage[] = convo.messages.map((m) => ({
       role: m.role as LlmMessage['role'],
