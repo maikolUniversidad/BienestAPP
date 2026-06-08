@@ -78,6 +78,61 @@ export class LlmProvider {
     }
   }
 
+  /** Estimación nutricional aproximada a partir de una descripción de la comida. */
+  async estimateNutrition(description: string): Promise<{
+    items: { name: string; confidence: number }[];
+    calories: number | null;
+    macros: { protein: number; carbs: number; fat: number } | null;
+  }> {
+    if (this.provider === 'mock' || !this.apiKey) {
+      return { items: [{ name: 'comida', confidence: 0.4 }], calories: 500, macros: { protein: 20, carbs: 60, fat: 18 } };
+    }
+    try {
+      const out = await this.completion(
+        [
+          {
+            role: 'system',
+            content:
+              'Eres un estimador nutricional APROXIMADO (no diagnóstico). Dada la descripción de una ' +
+              'comida, responde EXCLUSIVAMENTE con JSON válido: ' +
+              '{"items":[{"name":string,"confidence":number}],"calories":number,"macros":{"protein":number,"carbs":number,"fat":number}}. ' +
+              'Calorías en kcal y macros en gramos, valores aproximados.',
+          },
+          { role: 'user', content: description },
+        ],
+        { temperature: 0.2, maxTokens: 300, timeoutMs: this.CHAT_TIMEOUT_MS, json: true },
+      );
+      const j = JSON.parse(out);
+      return {
+        items: Array.isArray(j.items) ? j.items.slice(0, 12) : [],
+        calories: typeof j.calories === 'number' ? Math.round(j.calories) : null,
+        macros: j.macros ?? null,
+      };
+    } catch {
+      return { items: [], calories: null, macros: null };
+    }
+  }
+
+  /** Resumen breve y empático de un conjunto de textos (diario, semana). */
+  async summarize(systemPrompt: string, text: string): Promise<string> {
+    if (this.provider === 'mock' || !this.apiKey) {
+      return 'Resumen no disponible en modo demo.';
+    }
+    try {
+      return (
+        await this.completion(
+          [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: text },
+          ],
+          { temperature: 0.5, maxTokens: 350, timeoutMs: this.CHAT_TIMEOUT_MS },
+        )
+      ).trim();
+    } catch {
+      return '';
+    }
+  }
+
   // ─────────────── Llamada HTTP (OpenAI-compatible) ───────────────
 
   private async completion(

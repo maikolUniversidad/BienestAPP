@@ -23,6 +23,10 @@ import { AchievementsModule } from './achievements/achievements.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AdminModule } from './admin/admin.module';
 import { AuditModule } from './audit/audit.module';
+import { FoodModule } from './food/food.module';
+import { ExerciseModule } from './exercise/exercise.module';
+import { TestsModule } from './tests/tests.module';
+import { ContentModule } from './content/content.module';
 
 @Module({
   imports: [
@@ -43,6 +47,10 @@ import { AuditModule } from './audit/audit.module';
     AchievementsModule,
     DashboardModule,
     AdminModule,
+    FoodModule,
+    ExerciseModule,
+    TestsModule,
+    ContentModule,
   ],
   controllers: [AppController],
   providers: [

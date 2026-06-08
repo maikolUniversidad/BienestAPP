@@ -165,6 +165,32 @@ export class AiOrchestratorService {
     return { riskLevel: risk.level, sentiment };
   }
 
+  /** Estimación nutricional aproximada (registro de decisión incluido). */
+  async estimateNutrition(description: string) {
+    const clean = this.guardrails.sanitizeInput(description);
+    const result = await this.llm.estimateNutrition(clean);
+    await this.prisma.aiDecisionLog.create({
+      data: {
+        inputHash: this.guardrails.hashForLog(clean),
+        riskLevel: RiskLevel.NONE,
+        ruleMatches: [],
+        promptVersion: 'nutrition@1.0.0',
+        model: this.llm.modelName,
+        outputSummary: `~${result.calories ?? '?'} kcal`,
+        action: AiAction.NORMAL,
+        validatorResult: 'PASS',
+      },
+    });
+    return result;
+  }
+
+  /** Resumen empático de los textos de diario de la semana. */
+  async summarizeWeek(text: string) {
+    if (!text.trim()) return '';
+    const promptSpec = this.prompts.get('weekly_summary');
+    return this.llm.summarize(promptSpec.system, text);
+  }
+
   private async persistMessages(
     conversationId: string,
     userText: string,
