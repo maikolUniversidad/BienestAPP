@@ -11,10 +11,15 @@ saludables, acompañamiento preventivo, asistencia con IA segura y conexión con
 
 | Servicio | URL |
 |----------|-----|
-| API backend (Vercel) | https://bienest-app.vercel.app/api/v1 |
-| Swagger (docs API) | https://bienest-app.vercel.app/docs |
+| 🌐 Landing page | https://bienest-landing.vercel.app |
+| 🖥️ Panel web / Call center | https://bienest-admin.vercel.app |
+| ⚙️ API backend (Vercel) | https://bienest-app.vercel.app/api/v1 |
+| 📚 Swagger (docs API) | https://bienest-app.vercel.app/docs |
 | Base de datos | Supabase (PostgreSQL) |
 | IA | DeepSeek (`deepseek-chat`) |
+
+Tres proyectos Vercel desde un mismo repo (monorepo), todos con auto-deploy:
+`landing/` → landing · `web-admin/` → panel · `backend/` → API.
 
 Auto-deploy: cada push a `main` despliega el backend (Root Directory = `backend`).
 
