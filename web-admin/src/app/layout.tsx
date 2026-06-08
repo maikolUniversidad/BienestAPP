@@ -1,12 +1,15 @@
+import './globals.css';
+
 export const metadata = {
-  title: 'BienestAPP — Admin & Call Center',
-  description: 'Panel administrativo Nueva EPS',
+  title: 'BienestAPP — Panel & Bienestar',
+  description: 'Panel administrativo, call center y entorno de bienestar — Nueva EPS',
+  icons: { icon: '/logo-ai.png' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body style={{ fontFamily: 'Inter, system-ui, sans-serif', margin: 0 }}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

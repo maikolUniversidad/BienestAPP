@@ -1,6 +1,4 @@
-// Por defecto apunta a la API en producción; sobreescribible con NEXT_PUBLIC_API_URL.
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? 'https://bienest-app.vercel.app/api/v1';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://bienest-app.vercel.app/api/v1';
 
 function token(): string | null {
   if (typeof window === 'undefined') return null;
@@ -14,6 +12,11 @@ export function getRoles(): string[] {
   } catch {
     return [];
   }
+}
+
+export function isAffiliate(): boolean {
+  const r = getRoles();
+  return r.includes('AFFILIATE') && !r.some((x) => x !== 'AFFILIATE');
 }
 
 export function logout() {
@@ -35,7 +38,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     if (typeof window !== 'undefined') logout();
     throw new Error('Sesión expirada');
   }
-  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`API ${res.status}`);
   return res.json() as Promise<T>;
 }
 
@@ -52,7 +55,8 @@ export const api = {
     }
     return res;
   },
-  // Call center
+
+  // ---- Call center / admin ----
   queue: () => request<any[]>('/callcenter/queue'),
   getCase: (id: string) => request<any>(`/callcenter/cases/${id}`),
   setCaseStatus: (id: string, status: string) =>
@@ -62,13 +66,36 @@ export const api = {
   escalate: (id: string, target: string) =>
     request(`/callcenter/cases/${id}/escalate`, { method: 'POST', body: JSON.stringify({ target }) }),
   logCall: (id: string, durationSec?: number, outcome?: string) =>
-    request(`/callcenter/cases/${id}/call-log`, {
-      method: 'POST',
-      body: JSON.stringify({ durationSec, outcome }),
-    }),
-  // Admin
+    request(`/callcenter/cases/${id}/call-log`, { method: 'POST', body: JSON.stringify({ durationSec, outcome }) }),
   metrics: () => request<any>('/admin/metrics'),
   alerts: () => request<any[]>('/admin/alerts'),
   audit: (action?: string) =>
     request<any[]>(`/admin/audit${action ? `?action=${encodeURIComponent(action)}` : ''}`),
+
+  // ---- Afiliado (entorno unificado) ----
+  dashboard: () => request<any>('/dashboard'),
+  moodList: () => request<any[]>('/mood'),
+  logMood: (label: string, intensity: number, note?: string) =>
+    request('/mood', { method: 'POST', body: JSON.stringify({ label, intensity, note }) }),
+  journalList: () => request<any[]>('/journal'),
+  createJournal: (body: string, tags: string[] = []) =>
+    request('/journal', { method: 'POST', body: JSON.stringify({ body, tags }) }),
+  journalWeekly: () => request<any>('/journal/summary/weekly'),
+  startConversation: () => request<{ id: string }>('/ai/conversations', { method: 'POST', body: '{}' }),
+  sendMessage: (id: string, content: string) =>
+    request<{ message: { content: string }; riskLevel: string; crisisProtocol?: any }>(
+      `/ai/conversations/${id}/messages`,
+      { method: 'POST', body: JSON.stringify({ content }) },
+    ),
+  habits: () => request<any[]>('/habits'),
+  createHabit: (name: string, icon?: string) =>
+    request('/habits', { method: 'POST', body: JSON.stringify({ name, icon }) }),
+  logHabit: (id: string) => request(`/habits/${id}/log`, { method: 'POST', body: '{}' }),
+  foodList: () => request<any[]>('/food'),
+  analyzeFood: (description: string) =>
+    request<any>('/food/analyze', { method: 'POST', body: JSON.stringify({ description }) }),
+  pet: () => request<any>('/pet'),
+  content: (type?: string) => request<any[]>(`/content${type ? `?type=${type}` : ''}`),
+  sos: (type: string, note?: string) =>
+    request<any>('/emergency/sos', { method: 'POST', body: JSON.stringify({ type, note }) }),
 };

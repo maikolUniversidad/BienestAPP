@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
 
-function Metric({ label, value }: { label: string; value: number | string }) {
+function Stat({ ic, label, value }: { ic: string; label: string; value: number | string }) {
   return (
-    <div style={card}>
-      <div style={{ fontSize: 13, color: '#6B7A80' }}>{label}</div>
-      <div style={{ fontSize: 30, fontWeight: 800, color: '#11302B' }}>{value}</div>
+    <div className="card hover stat">
+      <div className="ic">{ic}</div>
+      <div className="lbl">{label}</div>
+      <div className="val">{value}</div>
     </div>
   );
 }
@@ -20,23 +21,23 @@ export default function Overview() {
     api.metrics().then(setM).catch((e) => setError(e.message));
   }, []);
 
-  if (error) return <div style={{ padding: 24, color: '#D64545' }}>Error: {error}</div>;
-  if (!m) return <div style={{ padding: 24 }}>Cargando…</div>;
+  if (error) return <p className="error">Error: {error}</p>;
+  if (!m) return <p className="muted">Cargando…</p>;
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1>Resumen — indicadores agregados</h1>
-      <p style={{ color: '#6B7A80' }}>Datos anónimos y agregados (sin información personal).</p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16, marginTop: 16 }}>
-        <Metric label="Usuarios activos" value={m.users} />
-        <Metric label="Casos call center abiertos" value={m.callCenter?.openCases ?? 0} />
-        <Metric label="Hábitos activos" value={m.moduleUsage?.habits ?? 0} />
-        <Metric label="Registros de ánimo" value={m.moduleUsage?.mood ?? 0} />
-        <Metric label="Entradas de diario" value={m.moduleUsage?.journal ?? 0} />
-        <Metric label="Conversaciones IA" value={m.moduleUsage?.aiChat ?? 0} />
+    <>
+      <div className="page-head">
+        <h2>Indicadores de bienestar</h2>
+        <p>Datos agregados y anónimos — sin información personal identificable.</p>
       </div>
-    </div>
+      <div className="grid grid-3">
+        <Stat ic="👥" label="Usuarios activos" value={m.users} />
+        <Stat ic="📞" label="Casos call center abiertos" value={m.callCenter?.openCases ?? 0} />
+        <Stat ic="🔥" label="Hábitos activos" value={m.moduleUsage?.habits ?? 0} />
+        <Stat ic="😊" label="Registros de ánimo" value={m.moduleUsage?.mood ?? 0} />
+        <Stat ic="📔" label="Entradas de diario" value={m.moduleUsage?.journal ?? 0} />
+        <Stat ic="💬" label="Conversaciones IA" value={m.moduleUsage?.aiChat ?? 0} />
+      </div>
+    </>
   );
 }
-
-const card: React.CSSProperties = { background: 'white', borderRadius: 14, padding: 18 };

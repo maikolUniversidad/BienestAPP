@@ -3,17 +3,17 @@
 import { useState } from 'react';
 import { api } from '../lib/api';
 
-const DEMO = [
+const DEMO: [string, string][] = [
+  ['afiliado@demo.co', 'Afiliado'],
   ['operador@demo.co', 'Call center'],
   ['psicologo@demo.co', 'Psicólogo'],
   ['medico@demo.co', 'Médico'],
   ['admin@demo.co', 'Admin EPS'],
-  ['superadmin@demo.co', 'Superadmin'],
   ['auditor@demo.co', 'Auditor'],
 ];
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('operador@demo.co');
+  const [email, setEmail] = useState('afiliado@demo.co');
   const [password, setPassword] = useState('Bienestar123');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -25,52 +25,44 @@ export default function LoginPage() {
     try {
       const res = await api.login(email, password);
       const roles = res.roles ?? [];
+      const onlyAffiliate = roles.includes('AFFILIATE') && roles.length === 1;
       const admin = ['EPS_ADMIN', 'SUPERADMIN', 'AUDITOR'].some((r) => roles.includes(r));
-      window.location.href = admin ? '/overview' : '/callcenter';
+      window.location.href = onlyAffiliate ? '/app' : admin ? '/overview' : '/callcenter';
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'No se pudo iniciar sesión');
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main style={{ display: 'grid', placeItems: 'center', minHeight: '100vh', background: '#F5F7F8' }}>
-      <form onSubmit={submit} style={S.form}>
-        <h1 style={{ color: '#1E9E8A', margin: 0 }}>BienestAPP</h1>
-        <p style={{ color: '#6B7A80', marginTop: 4 }}>Panel administrativo · Call Center</p>
-        <input style={S.input} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Correo" />
-        <input style={S.input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Contraseña" />
-        <button type="submit" style={S.btn} disabled={loading}>
+    <main className="auth-wrap">
+      <form className="auth-card" onSubmit={submit}>
+        <div className="auth-logo">
+          <img src="/logo-ai.png" alt="BienestAPP" />
+          <b>Bienest<span>APP</span></b>
+        </div>
+        <p className="muted" style={{ marginBottom: 18 }}>Bienestar · Call Center · Administración</p>
+
+        <input className="field" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Correo" />
+        <input className="field" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Contraseña" />
+        <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: '100%', justifyContent: 'center', marginTop: 14 }}>
           {loading ? 'Ingresando…' : 'Ingresar'}
         </button>
-        {error && <p style={{ color: '#D64545' }}>{error}</p>}
+        {error && <p className="error" style={{ marginTop: 12 }}>{error}</p>}
 
-        <div style={{ marginTop: 8, borderTop: '1px solid #eee', paddingTop: 12 }}>
-          <div style={{ fontSize: 12, color: '#6B7A80', marginBottom: 6 }}>Usuarios de prueba (clic):</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        <div style={{ marginTop: 18, borderTop: '1px solid var(--line)', paddingTop: 14 }}>
+          <div className="muted" style={{ fontSize: 12, marginBottom: 8 }}>Usuarios de prueba (clic):</div>
+          <div className="chips">
             {DEMO.map(([mail, label]) => (
-              <button
-                type="button"
-                key={mail}
-                onClick={() => setEmail(mail)}
-                style={S.chip}
-                title={mail}
-              >
+              <button type="button" key={mail} className="chip" onClick={() => setEmail(mail)} title={mail}>
                 {label}
               </button>
             ))}
           </div>
-          <div style={{ fontSize: 11, color: '#9aa', marginTop: 8 }}>Contraseña para todos: Bienestar123</div>
+          <div className="muted" style={{ fontSize: 11, marginTop: 10 }}>Contraseña para todos: Bienestar123</div>
         </div>
       </form>
     </main>
   );
 }
-
-const S: Record<string, React.CSSProperties> = {
-  form: { width: 340, display: 'grid', gap: 10, padding: 28, border: '1px solid #eee', borderRadius: 18, background: 'white' },
-  input: { padding: 11, border: '1px solid #ccc', borderRadius: 8 },
-  btn: { background: '#1E9E8A', color: 'white', padding: 11, borderRadius: 8, border: 0, cursor: 'pointer', fontWeight: 600 },
-  chip: { background: '#EAF4F1', color: '#11302B', border: 0, borderRadius: 16, padding: '6px 10px', fontSize: 12, cursor: 'pointer' },
-};
