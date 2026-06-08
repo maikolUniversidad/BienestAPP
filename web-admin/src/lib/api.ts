@@ -78,8 +78,13 @@ export const api = {
   logMood: (label: string, intensity: number, note?: string) =>
     request('/mood', { method: 'POST', body: JSON.stringify({ label, intensity, note }) }),
   journalList: () => request<any[]>('/journal'),
-  createJournal: (body: string, tags: string[] = []) =>
-    request('/journal', { method: 'POST', body: JSON.stringify({ body, tags }) }),
+  createJournal: (payload: { body: string; tags?: string[]; attachments?: any[]; transcription?: string }) =>
+    request<{ id: string; motivation?: string }>('/journal', { method: 'POST', body: JSON.stringify(payload) }),
+  journalUploadUrl: (kind: 'image' | 'audio', ext: string) =>
+    request<{ path: string; token: string; signedUrl: string }>('/journal/upload-url', {
+      method: 'POST',
+      body: JSON.stringify({ kind, ext }),
+    }),
   journalWeekly: () => request<any>('/journal/summary/weekly'),
   startConversation: () => request<{ id: string }>('/ai/conversations', { method: 'POST', body: '{}' }),
   sendMessage: (id: string, content: string) =>

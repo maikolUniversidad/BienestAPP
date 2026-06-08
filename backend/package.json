@@ -31,6 +31,7 @@
     "@nestjs/swagger": "^7.4.0",
     "@nestjs/throttler": "^6.2.0",
     "@prisma/client": "^5.18.0",
+    "@supabase/supabase-js": "^2.108.0",
     "bcrypt": "^5.1.1",
     "bullmq": "^5.12.0",
     "class-transformer": "^0.5.1",

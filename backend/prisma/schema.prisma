@@ -263,6 +263,8 @@ model JournalEntry {
   title           String?
   body            String // SENSITIVE (cifrado)
   tags            MoodLabel[]
+  attachments     Json? // [{ type: 'image' | 'audio', path: string }] en Supabase Storage
+  transcription   String? // SENSITIVE — transcripción del audio (se conserva el audio crudo)
   sentimentScore  Float? // -1..1, resultado de análisis (async)
   analyzed        Boolean         @default(false)
   riskAssessment  RiskAssessment?

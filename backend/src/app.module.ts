@@ -23,6 +23,7 @@ import { AchievementsModule } from './achievements/achievements.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AdminModule } from './admin/admin.module';
 import { AuditModule } from './audit/audit.module';
+import { StorageModule } from './storage/storage.module';
 import { FoodModule } from './food/food.module';
 import { ExerciseModule } from './exercise/exercise.module';
 import { TestsModule } from './tests/tests.module';
@@ -34,6 +35,7 @@ import { ContentModule } from './content/content.module';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     PrismaModule,
     AuditModule,
+    StorageModule,
     AuthModule,
     ProfileModule,
     ConsentModule,

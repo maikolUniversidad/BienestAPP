@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { GuardrailsService } from './guardrails/guardrails.service';
 import { ResponseValidatorService } from './guardrails/response-validator.service';
 import { RiskClassifierService } from './risk/risk-classifier.service';
+import { scanCrisisLexicon } from './risk/crisis-lexicon';
 import { PromptRegistry } from './prompts/prompt-registry';
 import { LlmProvider, LlmMessage } from './llm/llm.provider';
 import { EscalationService, CrisisProtocol } from './escalation/escalation.service';
@@ -182,6 +183,34 @@ export class AiOrchestratorService {
       },
     });
     return result;
+  }
+
+  /**
+   * Mensaje breve, cálido y motivador basado en lo que la persona escribió en el diario.
+   * Pasa por validación de salida. NO se envía en modo crisis (eso lo maneja analyzeJournal).
+   */
+  async motivationalMessage(text: string): Promise<string> {
+    const clean = this.guardrails.sanitizeInput(text);
+    // En crisis no damos un mensaje motivacional alegre: el protocolo de crisis se encarga.
+    if (scanCrisisLexicon(clean).length > 0) return '';
+    let raw = '';
+    try {
+      raw = await this.llm.chat([
+        {
+          role: 'system',
+          content:
+            'Eres un acompañante de bienestar de BienestAPP. A partir de lo que la persona escribió ' +
+            'en su diario, responde con UN mensaje muy breve (1–2 frases), cálido, empático y ' +
+            'motivador, que valide lo que siente y refuerce un hábito saludable o un pequeño paso. ' +
+            'NO diagnostiques, NO des consejos médicos, NO uses clichés vacíos. Español cercano.',
+        },
+        { role: 'user', content: clean },
+      ]);
+    } catch {
+      return 'Gracias por escribir hoy. Reconocer cómo te sientes ya es un paso valioso. 🌱';
+    }
+    const validated = this.validator.validate(raw);
+    return validated.content;
   }
 
   /** Resumen empático de los textos de diario de la semana. */
