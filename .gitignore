@@ -1,0 +1,47 @@
+# ─── Secrets / env (NUNCA versionar) ───
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# ─── Dependencies ───
+node_modules/
+**/node_modules/
+
+# ─── Builds ───
+dist/
+**/dist/
+.next/
+**/.next/
+out/
+build/
+coverage/
+**/coverage/
+
+# ─── Prisma generated client ───
+**/node_modules/.prisma/
+
+# ─── Expo / RN ───
+.expo/
+**/.expo/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# ─── Logs ───
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# ─── OS / IDE ───
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ─── Vercel ───
+.vercel

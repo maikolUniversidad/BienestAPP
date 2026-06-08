@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "BienestAPP",
+    "slug": "bienestapp",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "platforms": ["ios", "android", "web"],
+    "plugins": ["expo-secure-store", "expo-location"],
+    "ios": { "supportsTablet": true },
+    "android": { "permissions": ["ACCESS_FINE_LOCATION"] }
+  }
+}

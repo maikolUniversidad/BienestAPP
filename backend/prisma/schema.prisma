@@ -1,0 +1,554 @@
+// BienestAPP — esquema de base de datos (PostgreSQL / Prisma)
+// Dominios lógicos: operativo, emocional, clínico (ver docs/DATABASE.md)
+// Datos sensibles marcados con // SENSITIVE → cifrar a nivel de servicio (envelope encryption)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────── Enums ─────────────────────────
+
+enum RoleName {
+  AFFILIATE
+  CALLCENTER_OPERATOR
+  PSYCHOLOGIST
+  PHYSICIAN
+  EPS_ADMIN
+  SUPERADMIN
+  AUDITOR
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum RiskLevel {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum RiskSource {
+  JOURNAL
+  AI_CHAT
+  TEST
+  SOS
+  MANUAL
+}
+
+enum EmergencyType {
+  MEDICAL
+  EMOTIONAL_CRISIS
+  ACCIDENT
+  VIOLENCE
+  OTHER
+}
+
+enum TicketStatus {
+  NEW
+  IN_PROGRESS
+  ESCALATED
+  CLOSED
+}
+
+enum CaseStatus {
+  NEW
+  IN_PROGRESS
+  ESCALATED
+  CLOSED
+}
+
+enum ConsentType {
+  INFORMED_CONSENT
+  AI_PROCESSING
+  LOCATION
+  NOTIFICATIONS
+  EMERGENCY_CONTACT_NOTIFY
+  DATA_SHARING
+}
+
+enum MoodLabel {
+  ANXIETY
+  STRESS
+  SADNESS
+  MOTIVATION
+  TIREDNESS
+  GRATITUDE
+  CALM
+  ANGER
+  JOY
+}
+
+enum AiAction {
+  NORMAL
+  CONTAINMENT
+  ESCALATED
+  BLOCKED
+}
+
+enum NotificationType {
+  REMINDER
+  ACHIEVEMENT
+  RISK_ALERT
+  CALLCENTER
+  SYSTEM
+}
+
+// ───────────────────────── RBAC ─────────────────────────
+
+model Role {
+  id          String           @id @default(cuid())
+  name        RoleName         @unique
+  description String?
+  users       UserRole[]
+  permissions RolePermission[]
+  createdAt   DateTime         @default(now())
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  key         String           @unique // e.g. "callcenter.case.read"
+  description String?
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model UserRole {
+  userId String
+  roleId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+// ───────────────────────── Operativo ─────────────────────────
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  nit       String?  @unique
+  users     User[]
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id             String     @id @default(cuid())
+  email          String     @unique
+  passwordHash   String
+  status         UserStatus @default(ACTIVE)
+  mfaEnabled     Boolean    @default(false)
+  mfaSecret      String? // SENSITIVE
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  roles            UserRole[]
+  profile          AffiliateProfile?
+  consents         Consent[]
+  emergencyContacts EmergencyContact[]
+  moodEntries      MoodEntry[]
+  journalEntries   JournalEntry[]
+  conversations    AIConversation[]
+  riskAssessments  RiskAssessment[]
+  emergencyTickets EmergencyTicket[]
+  foodLogs         FoodLog[]
+  exerciseLogs     ExerciseLog[]
+  habits           Habit[]
+  pet              VirtualPet?
+  achievements     UserAchievementCard[]
+  testResults      TestResult[]
+  notifications    Notification[]
+  auditLogs        AuditLog[]
+  refreshTokens    RefreshToken[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model AffiliateProfile {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName     String
+  lastName      String
+  documentType  String?
+  documentNumber String?  // SENSITIVE
+  birthDate     DateTime?
+  phone         String?
+  // preferencias de bienestar (objetivos, áreas de interés, recordatorios)
+  preferences   Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Consent {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        ConsentType
+  version     String // versión del texto de consentimiento aceptado
+  granted     Boolean     @default(true)
+  grantedAt   DateTime    @default(now())
+  revokedAt   DateTime?
+
+  @@index([userId, type])
+}
+
+model EmergencyContact {
+  id           String  @id @default(cuid())
+  userId       String
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  relationship String?
+  phone        String // SENSITIVE
+  notifyOnCrisis Boolean @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ───────────────────────── Emocional ─────────────────────────
+
+model MoodEntry {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label     MoodLabel
+  intensity Int // 1..5
+  note      String? // SENSITIVE
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model JournalEntry {
+  id              String          @id @default(cuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title           String?
+  body            String // SENSITIVE (cifrado)
+  tags            MoodLabel[]
+  sentimentScore  Float? // -1..1, resultado de análisis (async)
+  analyzed        Boolean         @default(false)
+  riskAssessment  RiskAssessment?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  deletedAt       DateTime?
+
+  @@index([userId, createdAt])
+}
+
+model AIConversation {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String?
+  messages  AIMessage[]
+  decisions AiDecisionLog[]
+  createdAt DateTime       @default(now())
+
+  @@index([userId])
+}
+
+model AIMessage {
+  id             String         @id @default(cuid())
+  conversationId String
+  conversation   AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String // "user" | "assistant" | "system"
+  content        String // SENSITIVE
+  riskLevel      RiskLevel?
+  createdAt      DateTime       @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+// ───────────────────────── Clínico ─────────────────────────
+
+model RiskAssessment {
+  id             String      @id @default(cuid())
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  source         RiskSource
+  level          RiskLevel
+  ruleMatches    String[] // términos/reglas que dispararon (capa A)
+  llmConfidence  Float?
+  summary        String?
+  journalEntryId String?      @unique
+  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id])
+  reviewedByHuman Boolean    @default(false)
+  reviewedBy     String?
+  reviewedAt     DateTime?
+  createdAt      DateTime    @default(now())
+
+  @@index([userId, level])
+  @@index([level, reviewedByHuman])
+}
+
+model AiDecisionLog {
+  id              String          @id @default(cuid())
+  conversationId  String?
+  conversation    AIConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  inputHash       String // hash de la entrada (no PII en claro)
+  riskLevel       RiskLevel
+  ruleMatches     String[]
+  promptVersion   String
+  model           String
+  outputSummary   String?
+  action          AiAction
+  validatorResult String? // PASS | REWRITTEN | BLOCKED
+  latencyMs       Int?
+  reviewedByHuman Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+
+  @@index([action, createdAt])
+}
+
+// ───────────────────────── Emergencia / Call center ─────────────────────────
+
+model EmergencyTicket {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      EmergencyType
+  status    TicketStatus    @default(NEW)
+  riskLevel RiskLevel       @default(HIGH)
+  latitude  Float?
+  longitude Float?
+  note      String?
+  case      CallCenterCase?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([status, riskLevel])
+}
+
+model CallCenterCase {
+  id          String          @id @default(cuid())
+  ticketId    String          @unique
+  ticket      EmergencyTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  status      CaseStatus      @default(NEW)
+  priority    Int             @default(0) // mayor = más urgente
+  assignedTo  String? // userId del operador
+  escalatedTo String? // psychologist | physician | emergency_line
+  notes       CaseNote[]
+  callLogs    CallLog[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([status, priority])
+}
+
+model CaseNote {
+  id        String         @id @default(cuid())
+  caseId    String
+  case      CallCenterCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  authorId  String
+  body      String
+  createdAt DateTime       @default(now())
+
+  @@index([caseId])
+}
+
+model CallLog {
+  id         String         @id @default(cuid())
+  caseId     String
+  case       CallCenterCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  operatorId String
+  durationSec Int?
+  outcome    String?
+  createdAt  DateTime       @default(now())
+
+  @@index([caseId])
+}
+
+// ───────────────────────── Hábitos / actividad ─────────────────────────
+
+model FoodLog {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imageUrl      String?
+  detectedItems Json? // [{name, confidence}]
+  calories      Int? // aproximado
+  macros        Json? // {protein, carbs, fat}
+  approximate   Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model ExerciseLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       String // walk | activity | sleep | water | active_break
+  value      Float // pasos, minutos, litros, etc.
+  unit       String
+  createdAt  DateTime @default(now())
+
+  @@index([userId, type, createdAt])
+}
+
+model Habit {
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  icon      String?
+  target    Int        @default(1) // frecuencia objetivo por periodo
+  streak    Int        @default(0)
+  active    Boolean    @default(true)
+  logs      HabitLog[]
+  createdAt DateTime   @default(now())
+
+  @@index([userId])
+}
+
+model HabitLog {
+  id        String   @id @default(cuid())
+  habitId   String
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  date      DateTime @default(now())
+  completed Boolean  @default(true)
+
+  @@index([habitId, date])
+}
+
+// ───────────────────────── Gamificación ─────────────────────────
+
+model AchievementCard {
+  id          String                @id @default(cuid())
+  code        String                @unique
+  name        String
+  description String
+  rarity      String                @default("common")
+  imageUrl    String?
+  owners      UserAchievementCard[]
+}
+
+model UserAchievementCard {
+  userId    String
+  cardId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card      AchievementCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  earnedAt  DateTime        @default(now())
+
+  @@id([userId, cardId])
+}
+
+model VirtualPet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  species   String   @default("companion")
+  name      String
+  level     Int      @default(1)
+  happiness Int      @default(50) // 0..100
+  accessories String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ───────────────────────── Tests / contenido ─────────────────────────
+
+model WellnessTest {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  title       String
+  description String
+  category    String // stress | sleep | habits | mood | wellbeing
+  questions   Json // [{id, text, options:[{label,value}]}]
+  scoring     Json // reglas de interpretación (orientativas, no diagnósticas)
+  results     TestResult[]
+  active      Boolean      @default(true)
+}
+
+model TestResult {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testId    String
+  test      WellnessTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+  answers   Json
+  score     Int
+  band      String // interpretación orientativa
+  riskLevel RiskLevel    @default(NONE)
+  createdAt DateTime     @default(now())
+
+  @@index([userId, testId])
+}
+
+model ContentActivity {
+  id          String   @id @default(cuid())
+  type        String // breathing | meditation | active_break | gratitude | writing | education | video | routine
+  title       String
+  description String
+  durationMin Int?
+  mediaUrl    String?
+  tags        String[]
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([type])
+}
+
+// ───────────────────────── Notificaciones / auditoría ─────────────────────────
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  body      String
+  read      Boolean          @default(false)
+  data      Json?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, read])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action    String // e.g. "callcenter.case.view"
+  resource  String // e.g. "CallCenterCase:case_123"
+  ip        String?
+  userAgent String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+}
