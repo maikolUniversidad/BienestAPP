@@ -294,6 +294,8 @@ model AIMessage {
   role           String // "user" | "assistant" | "system"
   content        String // SENSITIVE
   riskLevel      RiskLevel?
+  emotionalTheme String? // tema emocional detectado (p. ej. ANXIETY, SADNESS)
+  attachments    Json? // [{ type: 'image' | 'audio', path: string }]
   createdAt      DateTime       @default(now())
 
   @@index([conversationId, createdAt])

@@ -5,6 +5,7 @@ import { GuardrailsService } from './guardrails/guardrails.service';
 import { ResponseValidatorService } from './guardrails/response-validator.service';
 import { RiskClassifierService } from './risk/risk-classifier.service';
 import { scanCrisisLexicon } from './risk/crisis-lexicon';
+import { detectEmotionTheme } from './risk/emotion-lexicon';
 import { PromptRegistry } from './prompts/prompt-registry';
 import { LlmProvider, LlmMessage } from './llm/llm.provider';
 import { EscalationService, CrisisProtocol } from './escalation/escalation.service';
@@ -12,7 +13,13 @@ import { EscalationService, CrisisProtocol } from './escalation/escalation.servi
 export interface OrchestratorReply {
   content: string;
   riskLevel: RiskLevel;
+  emotionalTheme: string;
   crisisProtocol?: CrisisProtocol;
+}
+
+export interface Attachment {
+  type: 'image' | 'audio';
+  path: string;
 }
 
 /**
@@ -39,19 +46,23 @@ export class AiOrchestratorService {
     conversationId: string;
     history: LlmMessage[];
     userText: string;
+    attachments?: Attachment[];
   }): Promise<OrchestratorReply> {
     const started = Date.now();
 
     // [1] Pre-guardrails
-    const clean = this.guardrails.sanitizeInput(params.userText);
+    let clean = this.guardrails.sanitizeInput(params.userText);
+    // Si solo hay adjuntos sin texto, lo reflejamos para que la IA lo reconozca.
+    const att = params.attachments ?? [];
+    if (!clean && att.length) clean = `(El usuario compartió ${att.map((a) => (a.type === 'image' ? 'una foto' : 'una nota de voz')).join(' y ')}.)`;
     const inputHash = this.guardrails.hashForLog(clean);
 
-    // [2] Clasificación de riesgo (A determinístico + B LLM)
+    // [2] Clasificación de riesgo + tema emocional
     const risk = await this.classifier.classify(clean);
+    const theme = detectEmotionTheme(clean);
 
-    // [2'] Corte por crisis (HIGH / CRITICAL)
+    // [2'] Corte por crisis (HIGH / CRITICAL) → activa líneas de ayuda
     if (this.classifier.isCrisis(risk.level)) {
-      // Mensaje de contención breve, validado.
       const promptSpec = this.prompts.get('psych_companion');
       let containment = '';
       try {
@@ -83,19 +94,17 @@ export class AiOrchestratorService {
         latencyMs: Date.now() - started,
       });
 
-      await this.persistMessages(params.conversationId, clean, protocol.containmentMessage, risk.level);
+      await this.persistMessages(params.conversationId, clean, protocol.containmentMessage, risk.level, theme, att);
 
-      return {
-        content: protocol.containmentMessage,
-        riskLevel: risk.level,
-        crisisProtocol: protocol,
-      };
+      return { content: protocol.containmentMessage, riskLevel: risk.level, emotionalTheme: theme, crisisProtocol: protocol };
     }
 
-    // [3] Prompt seguro + [4] LLM
+    // [3] Prompt seguro + contexto del usuario (integra toda la app) + [4] LLM
     const promptSpec = this.prompts.get('psych_companion');
+    const context = await this.buildUserContext(params.userId);
+    const system = `${promptSpec.system}\n\nContexto del usuario (úsalo con tacto para personalizar, no lo recites literal):\n${context}`;
     const messages: LlmMessage[] = [
-      { role: 'system', content: promptSpec.system },
+      { role: 'system', content: system },
       ...params.history,
       { role: 'user', content: clean },
     ];
@@ -108,7 +117,6 @@ export class AiOrchestratorService {
       raw =
         'En este momento no puedo responder, pero quiero acompañarte. Puedes intentar un ' +
         'ejercicio de respiración o, si lo necesitas, conectar con nuestro equipo.';
-      action = AiAction.NORMAL;
     }
 
     // [5] Validación de salida
@@ -127,9 +135,31 @@ export class AiOrchestratorService {
       latencyMs: Date.now() - started,
     });
 
-    await this.persistMessages(params.conversationId, clean, validated.content, risk.level);
+    await this.persistMessages(params.conversationId, clean, validated.content, risk.level, theme, att);
 
-    return { content: validated.content, riskLevel: risk.level };
+    return { content: validated.content, riskLevel: risk.level, emotionalTheme: theme };
+  }
+
+  /** Resumen compacto del estado del usuario para personalizar el acompañamiento. */
+  private async buildUserContext(userId: string): Promise<string> {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const [mood, habits, pet, lastJournal, recentFood] = await Promise.all([
+      this.prisma.moodEntry.findFirst({ where: { userId, createdAt: { gte: todayStart } }, orderBy: { createdAt: 'desc' } }),
+      this.prisma.habit.findMany({ where: { userId, active: true }, select: { name: true, streak: true } }),
+      this.prisma.virtualPet.findUnique({ where: { userId }, select: { name: true, level: true } }),
+      this.prisma.journalEntry.findFirst({ where: { userId, deletedAt: null }, orderBy: { createdAt: 'desc' }, select: { sentimentScore: true, tags: true } }),
+      this.prisma.foodLog.findFirst({ where: { userId, createdAt: { gte: todayStart } }, orderBy: { createdAt: 'desc' }, select: { calories: true } }),
+    ]);
+    const bestStreak = habits.reduce((m, h) => Math.max(m, h.streak), 0);
+    const lines = [
+      mood ? `- Ánimo de hoy: ${mood.label} (intensidad ${mood.intensity}/5).` : '- Aún no registró su ánimo hoy.',
+      `- Mejor racha de hábitos: ${bestStreak} día(s). Hábitos activos: ${habits.map((h) => h.name).join(', ') || 'ninguno'}.`,
+      pet ? `- Mascota: ${pet.name}, nivel ${pet.level}.` : '',
+      lastJournal?.sentimentScore != null ? `- Sentimiento del último diario: ${lastJournal.sentimentScore.toFixed(2)} (-1 a 1).` : '',
+      recentFood?.calories ? `- Registró comida hoy (~${recentFood.calories} kcal).` : '',
+    ].filter(Boolean);
+    return lines.join('\n');
   }
 
   /** Análisis de una entrada de diario (usado por la cola async). Devuelve nivel de riesgo. */
@@ -225,12 +255,21 @@ export class AiOrchestratorService {
     userText: string,
     assistantText: string,
     riskLevel: RiskLevel,
+    emotionalTheme?: string,
+    attachments?: Attachment[],
   ) {
-    await this.prisma.aIMessage.createMany({
-      data: [
-        { conversationId, role: 'user', content: userText, riskLevel },
-        { conversationId, role: 'assistant', content: assistantText, riskLevel },
-      ],
+    await this.prisma.aIMessage.create({
+      data: {
+        conversationId,
+        role: 'user',
+        content: userText,
+        riskLevel,
+        emotionalTheme,
+        attachments: (attachments as object) ?? undefined,
+      },
+    });
+    await this.prisma.aIMessage.create({
+      data: { conversationId, role: 'assistant', content: assistantText, riskLevel },
     });
   }
 

@@ -87,11 +87,16 @@ export const api = {
     }),
   journalWeekly: () => request<any>('/journal/summary/weekly'),
   startConversation: () => request<{ id: string }>('/ai/conversations', { method: 'POST', body: '{}' }),
-  sendMessage: (id: string, content: string) =>
-    request<{ message: { content: string }; riskLevel: string; crisisProtocol?: any }>(
+  sendMessage: (id: string, content: string, attachments?: any[]) =>
+    request<{ message: { content: string }; riskLevel: string; emotionalTheme?: string; crisisProtocol?: any }>(
       `/ai/conversations/${id}/messages`,
-      { method: 'POST', body: JSON.stringify({ content }) },
+      { method: 'POST', body: JSON.stringify({ content, attachments }) },
     ),
+  aiUploadUrl: (kind: 'image' | 'audio', ext: string) =>
+    request<{ path: string; token: string; signedUrl: string }>('/ai/upload-url', {
+      method: 'POST',
+      body: JSON.stringify({ kind, ext }),
+    }),
   habits: () => request<any[]>('/habits'),
   createHabit: (name: string, icon?: string) =>
     request('/habits', { method: 'POST', body: JSON.stringify({ name, icon }) }),
