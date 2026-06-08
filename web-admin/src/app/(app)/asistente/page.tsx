@@ -35,12 +35,9 @@ export default function Asistente() {
 
   async function loadConvos() { setConvos(await api.listConversations().catch(() => [])); }
 
-  async function newConversation() {
-    try {
-      const c = await api.startConversation();
-      setMode('persistent'); setCid(c.id); setMsgs([]); setCrisis(null); setShowHist(false);
-      loadConvos();
-    } catch { /* noop */ }
+  // Nueva conversación: no se crea en el servidor hasta el primer mensaje (evita vacías).
+  function newConversation() {
+    setMode('persistent'); setCid(null); setMsgs([]); setCrisis(null); setShowHist(false); setPending([]);
   }
   function startEphemeral() {
     setMode('ephemeral'); setCid(null); setMsgs([]); setCrisis(null); setShowHist(false); setPending([]);
@@ -63,7 +60,7 @@ export default function Asistente() {
     if (id === cid) newConversation(); else loadConvos();
   }
 
-  useEffect(() => { loadConvos(); newConversation(); /* eslint-disable-next-line */ }, []);
+  useEffect(() => { loadConvos(); /* empieza en una conversación nueva sin crearla aún */ }, []);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs, crisis]);
 
   async function onPhoto(e: React.ChangeEvent<HTMLInputElement>) {
@@ -119,8 +116,10 @@ export default function Asistente() {
       if (ephemeral) {
         res = await api.sendEphemeral(text, msgs.map((m) => ({ role: m.role, content: m.content })));
       } else {
-        if (!cid) { setBusy(false); return; }
-        res = await api.sendMessage(cid, text, sentAtts.map(({ type, path }) => ({ type, path })));
+        // Crea la conversación de forma diferida en el primer mensaje.
+        let id = cid;
+        if (!id) { const c = await api.startConversation(); id = c.id; setCid(id); }
+        res = await api.sendMessage(id, text, sentAtts.map(({ type, path }) => ({ type, path })));
         loadConvos(); // refresca títulos/orden del historial
       }
       setMsgs((m) => [...m, { role: 'assistant', content: res.message.content, theme: res.emotionalTheme }]);
