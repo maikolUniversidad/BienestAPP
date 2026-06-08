@@ -7,7 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
   const prefix = process.env.API_PREFIX ?? 'api/v1';
-  app.setGlobalPrefix(prefix);
+  app.setGlobalPrefix(prefix, { exclude: ['/', 'health'] });
 
   app.useGlobalPipes(
     new ValidationPipe({

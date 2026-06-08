@@ -18,7 +18,7 @@ async function bootstrap(): Promise<void> {
     bufferLogs: true,
   });
 
-  app.setGlobalPrefix(process.env.API_PREFIX ?? 'api/v1');
+  app.setGlobalPrefix(process.env.API_PREFIX ?? 'api/v1', { exclude: ['/', 'health'] });
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),
   );
