@@ -35,8 +35,15 @@ export default function Perfil() {
     await api.addEmergencyContact({ name: form.name.trim(), phone: form.phone.trim(), relationship: form.relationship.trim() || undefined });
     setForm({ name: '', phone: '', relationship: '' }); setMsg('Contacto agregado ✓'); setTimeout(() => setMsg(null), 2500); load();
   }
+  async function removeContact(id: string) { await api.deleteEmergencyContact(id); load(); }
 
-  const granted = (t: string) => consents.some((c) => c.type === t && c.granted && !c.revokedAt);
+  const grantedOne = (t: string) => consents.find((c) => c.type === t && c.granted && !c.revokedAt);
+  const granted = (t: string) => !!grantedOne(t);
+  async function toggleConsent(t: string) {
+    const g = grantedOne(t);
+    if (g) await api.revokeConsent(g.id); else await api.grantConsent(t);
+    load();
+  }
 
   return (
     <>
@@ -70,7 +77,9 @@ export default function Perfil() {
             {Object.keys(CONSENT_LABEL).map((t) => (
               <div key={t} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--line)' }}>
                 <span style={{ fontSize: 14 }}>{CONSENT_LABEL[t]}</span>
-                <span className="badge" style={{ background: granted(t) ? 'var(--salvia)' : 'var(--gris)' }}>{granted(t) ? 'Activo' : 'Inactivo'}</span>
+                <button onClick={() => toggleConsent(t)} className="badge" style={{ background: granted(t) ? 'var(--salvia)' : 'var(--gris)', border: 0, cursor: 'pointer' }}>
+                  {granted(t) ? 'Activo ✓' : 'Inactivo'}
+                </button>
               </div>
             ))}
           </div>
@@ -83,9 +92,9 @@ export default function Perfil() {
         <h3 style={{ fontFamily: 'Fraunces', color: 'var(--tinta)', marginBottom: 10 }}>Contactos de emergencia</h3>
         <div style={{ display: 'grid', gap: 8, marginBottom: 14 }}>
           {contacts.map((c) => (
-            <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--line)' }}>
+            <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--line)' }}>
               <span><b>{c.name}</b> <span className="muted">· {c.relationship || 'contacto'}</span></span>
-              <span className="muted">{c.phone}</span>
+              <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}><span className="muted">{c.phone}</span><button className="link" onClick={() => removeContact(c.id)}>🗑️</button></span>
             </div>
           ))}
           {contacts.length === 0 && <p className="muted">No tienes contactos de emergencia. Agrega al menos uno.</p>}

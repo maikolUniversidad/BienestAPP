@@ -31,6 +31,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? '';
   const [sos, setSos] = useState(false);
   const [sent, setSent] = useState<any>(null);
+  const [menu, setMenu] = useState(false);
 
   useEffect(() => {
     if (!window.localStorage.getItem('accessToken')) window.location.href = '/';
@@ -66,7 +67,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <header className="topbar">
           <h1>Hola 👋</h1>
           <a className="link desktop-only" href="https://bienest-landing.vercel.app" target="_blank" rel="noreferrer">Ver landing ↗</a>
-          <button className="icon-btn mobile-only" onClick={logout}>Salir</button>
+          <button className="icon-btn mobile-only" onClick={() => setMenu(true)} aria-label="Menú">☰ Menú</button>
         </header>
         <div className="content">{children}</div>
       </div>
@@ -83,6 +84,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Botón SOS flotante (móvil) */}
       <button className="sos-fab" onClick={() => { setSent(null); setSos(true); }} aria-label="Botón SOS">SOS</button>
+
+      {/* Menú completo (móvil) — acceso a todas las secciones */}
+      {menu && (
+        <div style={overlay} onClick={() => setMenu(false)}>
+          <div className="card" style={{ width: 360, maxWidth: '92vw', maxHeight: '85vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div className="brand" style={{ padding: 0 }}><b style={{ fontFamily: 'Fraunces', fontSize: 19, color: 'var(--tinta)' }}>Bienest<span style={{ color: 'var(--coral-deep)' }}>APP</span></b></div>
+              <button className="link" onClick={() => setMenu(false)}>Cerrar ✕</button>
+            </div>
+            <nav style={{ display: 'grid', gap: 4 }}>
+              {NAV.map((n) => (
+                <Link key={n.href} href={n.href} onClick={() => setMenu(false)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 12, fontWeight: 600, color: pathname === n.href ? '#fff' : 'var(--tinta)', background: pathname === n.href ? 'var(--coral)' : 'var(--bg)' }}>
+                  <span style={{ width: 22, display: 'inline-flex' }}><Ico k={n.ic} /></span>{n.label}
+                </Link>
+              ))}
+            </nav>
+            <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center', marginTop: 14 }} onClick={logout}>Cerrar sesión</button>
+          </div>
+        </div>
+      )}
 
       {sos && (
         <div style={overlay} onClick={() => setSos(false)}>

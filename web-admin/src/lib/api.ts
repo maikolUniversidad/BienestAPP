@@ -55,6 +55,17 @@ export const api = {
     }
     return res;
   },
+  async register(input: { email: string; password: string; firstName: string; lastName: string }) {
+    const res = await request<{ accessToken: string; roles: string[] }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('accessToken', res.accessToken);
+      window.localStorage.setItem('roles', JSON.stringify(res.roles ?? ['AFFILIATE']));
+    }
+    return res;
+  },
 
   // ---- Call center / admin ----
   queue: () => request<any[]>('/callcenter/queue'),
@@ -126,9 +137,13 @@ export const api = {
   profile: () => request<any>('/profile'),
   updateProfile: (patch: any) => request('/profile', { method: 'PUT', body: JSON.stringify(patch) }),
   consents: () => request<any[]>('/consents'),
+  grantConsent: (type: string) =>
+    request('/consents', { method: 'POST', body: JSON.stringify({ type, version: '1.0', granted: true }) }),
+  revokeConsent: (id: string) => request(`/consents/${id}`, { method: 'DELETE' }),
   emergencyContacts: () => request<any[]>('/emergency-contacts'),
   addEmergencyContact: (c: { name: string; phone: string; relationship?: string }) =>
     request('/emergency-contacts', { method: 'POST', body: JSON.stringify(c) }),
+  deleteEmergencyContact: (id: string) => request(`/emergency-contacts/${id}`, { method: 'DELETE' }),
   // Metas
   goals: () => request<any[]>('/goals'),
   goalStats: () => request<{ active: number; completed: number }>('/goals/stats'),
