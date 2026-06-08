@@ -55,10 +55,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="main">
         <header className="topbar">
           <h1>{title}</h1>
-          <a className="link" href="https://bienest-landing.vercel.app" target="_blank" rel="noreferrer">Ver landing ↗</a>
+          <a className="link desktop-only" href="https://bienest-landing.vercel.app" target="_blank" rel="noreferrer">Ver landing ↗</a>
+          <button className="icon-btn mobile-only" onClick={logout}>Salir</button>
         </header>
         <div className="content">{children}</div>
       </div>
+
+      {/* Menú inferior (móvil) */}
+      <nav className="bottom-nav">
+        {visible.map((n) => (
+          <Link key={n.href} href={n.href} className={pathname.startsWith(n.href) ? 'active' : ''}>
+            <span className="ic">{n.ic}</span>
+            <span>{n.label.split(' ')[0]}</span>
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 }

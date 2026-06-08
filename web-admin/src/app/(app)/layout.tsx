@@ -60,10 +60,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="main">
         <header className="topbar">
           <h1>Hola 👋</h1>
-          <a className="link" href="https://bienest-landing.vercel.app" target="_blank" rel="noreferrer">Ver landing ↗</a>
+          <a className="link desktop-only" href="https://bienest-landing.vercel.app" target="_blank" rel="noreferrer">Ver landing ↗</a>
+          <button className="icon-btn mobile-only" onClick={logout}>Salir</button>
         </header>
         <div className="content">{children}</div>
       </div>
+
+      {/* Menú inferior (móvil) */}
+      <nav className="bottom-nav">
+        {NAV.map((n) => (
+          <Link key={n.href} href={n.href} className={pathname === n.href ? 'active' : ''}>
+            <span className="ic">{n.ic}</span>
+            <span>{n.label.split(' ')[0]}</span>
+          </Link>
+        ))}
+      </nav>
+
+      {/* Botón SOS flotante (móvil) */}
+      <button className="sos-fab" onClick={() => { setSent(null); setSos(true); }} aria-label="Botón SOS">SOS</button>
 
       {sos && (
         <div style={overlay} onClick={() => setSos(false)}>
