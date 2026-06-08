@@ -7,8 +7,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Runtime: conexión POOLED de Supabase (pgbouncer, puerto 6543) — apta para serverless/Vercel.
+  url       = env("DATABASE_URL")
+  // Migraciones / introspección: conexión DIRECTA (puerto 5432).
+  directUrl = env("DIRECT_URL")
 }
 
 // ───────────────────────── Enums ─────────────────────────
