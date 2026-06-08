@@ -97,7 +97,7 @@ export default function AffiliateHome() {
               <p className="muted" style={{ marginBottom: 12 }}>
                 {d?.moodToday ? 'Si quieres, escribe un poco más en tu diario. No hay respuestas correctas.' : 'Tómate unos minutos para escribir sobre tu día. Solo escribe lo que sientes.'}
               </p>
-              <Link className="btn btn-primary" href="/diario">{d?.moodToday ? 'Abrir mi diario' : 'Comenzar ahora'} →</Link>
+              <Link className="btn btn-primary" href={d?.moodToday ? '/diario' : '/checkin'}>{d?.moodToday ? 'Abrir mi diario' : 'Comenzar ahora'} →</Link>
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginTop: 14 }}>

@@ -113,7 +113,22 @@ export const api = {
   analyzeFood: (description: string) =>
     request<any>('/food/analyze', { method: 'POST', body: JSON.stringify({ description }) }),
   pet: () => request<any>('/pet'),
+  savePet: (name: string, species: string) =>
+    request('/pet', { method: 'POST', body: JSON.stringify({ name, species }) }),
   content: (type?: string) => request<any[]>(`/content${type ? `?type=${type}` : ''}`),
+  // Hábitos especializados (sueño / hidratación / actividad) via ExerciseLog
+  exerciseToday: () => request<any>('/exercise/today'),
+  logExercise: (type: string, value: number, unit: string) =>
+    request('/exercise', { method: 'POST', body: JSON.stringify({ type, value, unit }) }),
+  // Logros
+  achievements: () => request<any>('/achievements'),
+  // Perfil / privacidad
+  profile: () => request<any>('/profile'),
+  updateProfile: (patch: any) => request('/profile', { method: 'PUT', body: JSON.stringify(patch) }),
+  consents: () => request<any[]>('/consents'),
+  emergencyContacts: () => request<any[]>('/emergency-contacts'),
+  addEmergencyContact: (c: { name: string; phone: string; relationship?: string }) =>
+    request('/emergency-contacts', { method: 'POST', body: JSON.stringify(c) }),
   // Metas
   goals: () => request<any[]>('/goals'),
   goalStats: () => request<{ active: number; completed: number }>('/goals/stats'),
