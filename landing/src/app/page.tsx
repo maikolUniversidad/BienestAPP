@@ -24,7 +24,10 @@ export default function Home() {
       {/* NAV */}
       <nav className="nav">
         <div className="container nav-inner">
-          <a className="brand" href="#top"><img src="/logo.svg" alt="BienestAPP" /></a>
+          <a className="brand-lockup" href="#top">
+            <img src="/logo-ai.png" alt="BienestAPP" />
+            <span className="name">Bienest<span className="app">APP</span></span>
+          </a>
           <div className="nav-links">
             <a href="#modulos">Módulos</a>
             <a href="#ia">IA Segura</a>
@@ -86,14 +89,26 @@ export default function Home() {
 
       {/* MISIÓN */}
       <section className="sec">
-        <div className="container sec-head">
-          <span className="kicker">Bienestar preventivo</span>
-          <h2>Cuidar antes de tratar</h2>
-          <p>
-            BienestAPP acompaña a cada afiliado en su día a día emocional y de hábitos, detecta señales de
-            riesgo de forma temprana y conecta con ayuda humana cuando importa — siempre con privacidad y
-            lenguaje responsable.
-          </p>
+        <div className="container split">
+          <div>
+            <span className="kicker">Bienestar preventivo</span>
+            <h2 style={{ fontSize: 36, color: 'var(--ink-2)', letterSpacing: '-1px', margin: '10px 0 16px' }}>
+              Cuidar antes de tratar
+            </h2>
+            <p style={{ color: 'var(--muted)', fontSize: 18 }}>
+              BienestAPP acompaña a cada afiliado en su día a día emocional y de hábitos, detecta señales de
+              riesgo de forma temprana y conecta con ayuda humana cuando importa — siempre con privacidad y
+              lenguaje responsable.
+            </p>
+            <ul className="safe-list" style={{ color: 'var(--ink-2)', marginTop: 22 }}>
+              <li><span className="chk" style={{ color: 'var(--primary)' }}>✓</span> Detección temprana de señales de riesgo.</li>
+              <li><span className="chk" style={{ color: 'var(--primary)' }}>✓</span> Acompañamiento humano a un toque.</li>
+              <li><span className="chk" style={{ color: 'var(--primary)' }}>✓</span> Privacidad y lenguaje responsable.</li>
+            </ul>
+          </div>
+          <div>
+            <img className="media-img" src="/hero.png" alt="Persona usando BienestAPP con calma" />
+          </div>
         </div>
       </section>
 
@@ -159,6 +174,29 @@ export default function Home() {
             <div className="step"><div className="n">2</div><h3>Registra tu día</h3><p style={{ color: 'var(--muted)' }}>Ánimo, diario, hábitos, comida y actividad — a tu ritmo.</p></div>
             <div className="step"><div className="n">3</div><h3>Recibe apoyo</h3><p style={{ color: 'var(--muted)' }}>IA de acompañamiento, recomendaciones y tu mascota que evoluciona.</p></div>
             <div className="step"><div className="n">4</div><h3>Conecta si lo necesitas</h3><p style={{ color: 'var(--muted)' }}>Botón SOS y call center humano siempre a un toque.</p></div>
+          </div>
+        </div>
+      </section>
+
+      {/* MASCOTA */}
+      <section className="sec mascota">
+        <div className="container mascota-band">
+          <img src="/mascota.png" alt="Compi, la mascota de bienestar" />
+          <div>
+            <span className="kicker">Conoce a Compi</span>
+            <h2 style={{ fontSize: 34, color: 'var(--ink-2)', letterSpacing: '-1px', margin: '10px 0 14px' }}>
+              Tu compañero de bienestar
+            </h2>
+            <p style={{ color: 'var(--muted)', fontSize: 18 }}>
+              Compi evoluciona contigo a medida que cumples hábitos saludables y te envía mensajes
+              motivacionales medidos. Diseñado para <b>reforzar el bienestar sin culpa ni presión</b>:
+              nunca manipula emocionalmente, solo te acompaña a tu ritmo.
+            </p>
+            <div className="roles" style={{ justifyContent: 'flex-start', marginTop: 18 }}>
+              <span className="role-chip">Evoluciona con tus hábitos</span>
+              <span className="role-chip">Mensajes positivos</span>
+              <span className="role-chip">Accesorios desbloqueables</span>
+            </div>
           </div>
         </div>
       </section>
@@ -236,7 +274,10 @@ export default function Home() {
         <div className="container">
           <div className="foot-grid">
             <div>
-              <img src="/logo.svg" alt="BienestAPP" style={{ height: 38, filter: 'brightness(0) invert(1)' }} />
+              <div className="brand-lockup">
+                <img src="/logo-ai.png" alt="BienestAPP" />
+                <span className="name" style={{ color: '#fff' }}>Bienest<span className="app" style={{ color: '#5FE3C9' }}>APP</span></span>
+              </div>
               <p style={{ marginTop: 14, maxWidth: 320 }}>
                 SuperApp de Bienestar Corporativo y Salud Preventiva para afiliados de Nueva EPS.
                 Acompañamiento con IA segura, hábitos y conexión humana.

@@ -163,3 +163,18 @@ footer a:hover { color: var(--primary-2); }
 
 .fade-up { animation: fadeUp .7s ease both; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Brand lockup ---------- */
+.brand-lockup { display: flex; align-items: center; gap: 10px; }
+.brand-lockup img { height: 40px; width: 40px; border-radius: 11px; box-shadow: 0 6px 16px -8px rgba(30,158,138,.5); }
+.brand-lockup .name { font-weight: 800; font-size: 21px; color: var(--ink-2); letter-spacing: -.5px; }
+.brand-lockup .name .app { color: var(--primary); }
+
+/* ---------- Media images ---------- */
+.media-img { width: 100%; border-radius: 26px; box-shadow: var(--shadow); display: block; }
+
+/* ---------- Mascota band ---------- */
+.mascota { background: linear-gradient(120deg, rgba(30,158,138,.07), rgba(95,227,201,.12)); }
+.mascota-band { display: grid; grid-template-columns: 320px 1fr; gap: 48px; align-items: center; }
+.mascota-band img { width: 100%; max-width: 320px; filter: drop-shadow(0 24px 40px rgba(17,48,43,.18)); }
+@media (max-width: 760px) { .mascota-band { grid-template-columns: 1fr; text-align: center; } .mascota-band img { max-width: 220px; margin: 0 auto; } }
