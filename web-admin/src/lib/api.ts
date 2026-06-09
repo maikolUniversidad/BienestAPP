@@ -140,7 +140,7 @@ export const api = {
   journalList: () => request<any[]>('/journal'),
   createJournal: (payload: { body: string; tags?: string[]; attachments?: any[]; transcription?: string }) =>
     request<{ id: string; motivation?: string }>('/journal', { method: 'POST', body: JSON.stringify(payload) }),
-  journalUploadUrl: (kind: 'image' | 'audio', ext: string) =>
+  journalUploadUrl: (kind: 'image' | 'audio' | 'document', ext: string) =>
     request<{ path: string; token: string; signedUrl: string }>('/journal/upload-url', {
       method: 'POST',
       body: JSON.stringify({ kind, ext }),
@@ -160,7 +160,7 @@ export const api = {
       `/ai/conversations/${id}/messages`,
       { method: 'POST', body: JSON.stringify({ content, attachments }) },
     ),
-  aiUploadUrl: (kind: 'image' | 'audio', ext: string) =>
+  aiUploadUrl: (kind: 'image' | 'audio' | 'document', ext: string) =>
     request<{ path: string; token: string; signedUrl: string }>('/ai/upload-url', {
       method: 'POST',
       body: JSON.stringify({ kind, ext }),
@@ -170,7 +170,7 @@ export const api = {
     request('/habits', { method: 'POST', body: JSON.stringify({ name, icon }) }),
   logHabit: (id: string) => request(`/habits/${id}/log`, { method: 'POST', body: '{}' }),
   foodList: () => request<any[]>('/food'),
-  foodUploadUrl: (_kind: 'image' | 'audio', ext: string) =>
+  foodUploadUrl: (_kind: 'image' | 'audio' | 'document', ext: string) =>
     request<{ path: string; token: string }>('/food/upload-url', { method: 'POST', body: JSON.stringify({ ext }) }),
   analyzeFoodPhoto: (imagePath: string, mealType?: string, note?: string) =>
     request<any>('/food/analyze-photo', { method: 'POST', body: JSON.stringify({ imagePath, mealType, note }) }),
@@ -190,7 +190,7 @@ export const api = {
   // ---- Gestión documental / firma digital ----
   docsMine: () => request<{ signed: any[]; pending: any[]; pendingAttendance: any[] }>('/documents/mine'),
   docsPendingCount: () => request<{ count: number }>('/documents/pending-count'),
-  docsUploadUrl: (_kind: 'image' | 'audio', ext: string) =>
+  docsUploadUrl: (_kind: 'image' | 'audio' | 'document', ext: string) =>
     request<{ path: string; token: string }>('/documents/upload-url', { method: 'POST', body: JSON.stringify({ ext }) }),
   signDocument: (body: { signedDocumentId?: string; templateId?: string; appointmentId?: string; photoPath?: string; evidence: Record<string, unknown> }) =>
     request<any>('/documents/sign', { method: 'POST', body: JSON.stringify(body) }),
@@ -236,7 +236,7 @@ export const api = {
   profile: () => request<any>('/profile'),
   updateProfile: (patch: any) => request('/profile', { method: 'PUT', body: JSON.stringify(patch) }),
   profileActivity: () => request<any>('/profile/activity'),
-  profileAvatarUrl: (_kind: 'image' | 'audio', ext: string) =>
+  profileAvatarUrl: (_kind: 'image' | 'audio' | 'document', ext: string) =>
     request<{ path: string; token: string; signedUrl: string }>('/profile/avatar-url', {
       method: 'POST',
       body: JSON.stringify({ kind: 'image', ext }),

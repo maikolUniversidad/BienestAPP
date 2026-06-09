@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
 import { uploadDocPhoto } from '../../../lib/storage';
+import { FilePicker } from '../../../components/file-picker';
 
 const KINDS = [{ k: 'attendance', l: 'Asistencia' }, { k: 'consent', l: 'Consentimiento' }, { k: 'authorization', l: 'Autorización' }, { k: 'generic', l: 'General' }];
 const SAMPLE = { nombre: 'María Gómez', documento: '52123456', fecha: 'hoy', ips: 'IPS Bienestar' };
@@ -31,10 +32,8 @@ export default function DocumentosAdmin() {
     await api.docIpsSave(ipsForm.id, ipsForm).catch(() => undefined);
     setIpsForm({ id: null, name: '', nit: '', epsCode: '', address: '', phone: '', logoPath: '' }); flash('IPS guardada ✓'); load();
   }
-  async function onLogo(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]; if (!f) return;
+  async function onLogo(f: File) {
     try { const { path } = await uploadDocPhoto(f, (f.name.split('.').pop() || 'png').toLowerCase()); setIpsForm({ ...ipsForm, logoPath: path }); flash('Logo subido ✓'); } catch { flash('No se pudo subir el logo.'); }
-    e.target.value = '';
   }
   async function saveTpl() {
     if (!tpl.name.trim() || !tpl.htmlBody.trim()) return flash('Nombre y cuerpo requeridos.');
@@ -64,8 +63,8 @@ export default function DocumentosAdmin() {
               <input className="field" value={ipsForm.epsCode} onChange={(e) => setIpsForm({ ...ipsForm, epsCode: e.target.value })} placeholder="EPS (código)" />
             </div>
             <input className="field" value={ipsForm.address} onChange={(e) => setIpsForm({ ...ipsForm, address: e.target.value })} placeholder="Dirección" />
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
-              <label className="btn btn-ghost btn-sm" style={{ cursor: 'pointer' }}>🖼️ Subir logo<input type="file" accept="image/*" hidden onChange={onLogo} /></label>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
+              <FilePicker onFile={onLogo} accept="image/*" cameraLabel="📷 Logo (cámara)" fileLabel="🖼️ Logo (archivo)" />
               {ipsForm.logoPath && <span className="muted" style={{ fontSize: 12 }}>logo listo ✓</span>}
               <button className="btn btn-primary btn-sm" onClick={saveIps} style={{ marginLeft: 'auto' }}>{ipsForm.id ? 'Actualizar' : 'Crear IPS'}</button>
             </div>

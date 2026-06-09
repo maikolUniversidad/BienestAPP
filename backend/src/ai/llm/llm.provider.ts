@@ -27,9 +27,14 @@ export class LlmProvider {
   private readonly logger = new Logger(LlmProvider.name);
   private readonly provider = process.env.AI_PROVIDER ?? 'mock';
   private readonly model = process.env.AI_MODEL ?? 'deepseek-chat';
-  private readonly visionModel = process.env.AI_VISION_MODEL ?? this.model;
   private readonly baseUrl = process.env.AI_BASE_URL ?? 'https://api.deepseek.com';
   private readonly apiKey = process.env.AI_API_KEY ?? '';
+  // Visión: puede apuntar a un proveedor distinto (OpenAI/Gemini, OpenAI-compatible).
+  // Si no se configura, usa el proveedor principal (que puede no soportar imágenes → fallback).
+  private readonly visionModel = process.env.AI_VISION_MODEL ?? this.model;
+  private readonly visionBaseUrl = process.env.AI_VISION_BASE_URL ?? this.baseUrl;
+  private readonly visionApiKey = process.env.AI_VISION_API_KEY ?? this.apiKey;
+  private get visionEnabled() { return !!this.visionApiKey && !!process.env.AI_VISION_MODEL; }
 
   private readonly CHAT_TIMEOUT_MS = 15_000;
   private readonly CLASSIFY_TIMEOUT_MS = 8_000;
@@ -125,7 +130,7 @@ export class LlmProvider {
     mealTypeGuess?: string;
     vision: boolean;
   }> {
-    if (this.provider === 'mock' || !this.apiKey) return { ...this.heuristicNutrition(hint?.mealType), vision: false };
+    if (!this.visionEnabled) return { ...this.heuristicNutrition(hint?.mealType), vision: false };
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.CHAT_TIMEOUT_MS);
     try {
@@ -138,9 +143,9 @@ export class LlmProvider {
         { type: 'text', text: hint?.note ? `Contexto del usuario: ${hint.note}` : 'Analiza esta comida.' },
         { type: 'image_url', image_url: { url: imageUrl } },
       ];
-      const res = await fetch(`${this.baseUrl}/chat/completions`, {
+      const res = await fetch(`${this.visionBaseUrl}/chat/completions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.apiKey}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.visionApiKey}` },
         body: JSON.stringify({
           model: this.visionModel,
           messages: [{ role: 'system', content: sys }, { role: 'user', content: userContent }],
@@ -171,7 +176,7 @@ export class LlmProvider {
    * Si no hay visión disponible, devuelve match=null (requiere revisión manual).
    */
   async verifyIdentity(profileUrl: string, liveUrl: string): Promise<{ match: boolean | null; confidence: number | null; reason?: string }> {
-    if (this.provider === 'mock' || !this.apiKey) return { match: null, confidence: null, reason: 'sin_vision' };
+    if (!this.visionEnabled) return { match: null, confidence: null, reason: 'sin_vision' };
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.CHAT_TIMEOUT_MS);
     try {
@@ -179,9 +184,9 @@ export class LlmProvider {
         'Eres un verificador de identidad. Te doy dos fotos: la primera es la foto de perfil registrada, ' +
         'la segunda es una foto tomada en el momento. Indica si parecen ser la MISMA persona. ' +
         'Responde EXCLUSIVAMENTE con JSON: {"match":boolean,"confidence":number,"reason":string}. confidence 0..1.';
-      const res = await fetch(`${this.baseUrl}/chat/completions`, {
+      const res = await fetch(`${this.visionBaseUrl}/chat/completions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.apiKey}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.visionApiKey}` },
         body: JSON.stringify({
           model: this.visionModel,
           messages: [

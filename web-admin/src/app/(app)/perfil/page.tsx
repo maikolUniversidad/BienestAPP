@@ -6,6 +6,7 @@ import { api, logout } from '../../../lib/api';
 import { Hilo } from '../../../components/brand';
 import { uploadAvatar } from '../../../lib/storage';
 import { ThemeToggle } from '../../../components/theme-toggle';
+import { FilePicker } from '../../../components/file-picker';
 
 const CONSENT_LABEL: Record<string, string> = {
   INFORMED_CONSENT: 'Consentimiento informado',
@@ -42,9 +43,7 @@ export default function Perfil() {
     setMsg('EPS actualizada ✓'); setTimeout(() => setMsg(null), 2500); load();
   }
 
-  async function onAvatar(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  async function onAvatarFile(file: File) {
     setUploading(true);
     try {
       const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
@@ -52,7 +51,7 @@ export default function Perfil() {
       await api.updateProfile({ avatarPath: path });
       setAvatarPreview(URL.createObjectURL(file));
       setMsg('Foto actualizada ✓'); setTimeout(() => setMsg(null), 2500); load();
-    } catch { setMsg('No se pudo subir la foto'); } finally { setUploading(false); e.target.value = ''; }
+    } catch { setMsg('No se pudo subir la foto'); } finally { setUploading(false); }
   }
 
   async function addContact() {
@@ -79,17 +78,17 @@ export default function Perfil() {
         {/* Datos + mascota */}
         <div className="card">
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <label style={{ position: 'relative', cursor: 'pointer' }} title="Cambiar foto">
+            <div style={{ position: 'relative' }}>
               {avatarPreview || profile?.avatarUrl
                 ? <img className="avatar-lg" src={avatarPreview ?? profile.avatarUrl} alt="" />
                 : <div className="avatar-lg" style={{ background: 'var(--durazno)', display: 'grid', placeItems: 'center' }}><Hilo size={40} /></div>}
-              <span style={{ position: 'absolute', right: -4, bottom: -4, background: 'var(--coral)', color: '#fff', width: 28, height: 28, borderRadius: 999, display: 'grid', placeItems: 'center', fontSize: 13 }}>{uploading ? '…' : '📷'}</span>
-              <input type="file" accept="image/*" hidden onChange={onAvatar} />
-            </label>
+              {uploading && <span style={{ position: 'absolute', right: -4, bottom: -4, background: 'var(--coral)', color: '#fff', width: 28, height: 28, borderRadius: 999, display: 'grid', placeItems: 'center', fontSize: 13 }}>…</span>}
+            </div>
             <div>
               <h3 style={{ fontFamily: 'Fraunces', color: 'var(--tinta)' }}>{profile ? `${profile.firstName} ${profile.lastName}` : 'Afiliado'}</h3>
               <p className="muted" style={{ fontSize: 13 }}>{profile?.phone || 'Sin teléfono registrado'}</p>
               {profile?.bio && <p className="muted" style={{ fontSize: 13, marginTop: 2 }}>{profile.bio}</p>}
+              <div style={{ marginTop: 8 }}><FilePicker onFile={onAvatarFile} accept="image/*" disabled={uploading} /></div>
             </div>
           </div>
           <div style={{ marginTop: 16, background: 'var(--bg)', borderRadius: 14, padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}>

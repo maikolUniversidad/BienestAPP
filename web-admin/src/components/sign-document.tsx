@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../lib/api';
 import { uploadDocPhoto } from '../lib/storage';
+import { FilePicker } from './file-picker';
 
 export interface SignTarget {
   signedDocumentId?: string;
@@ -48,6 +49,17 @@ export function SignDocument({ target, onDone, onCancel }: { target: SignTarget;
     } catch { setErr('No se pudo acceder a la cámara. Permite el acceso para verificar tu identidad.'); }
   }
   function stopCam() { streamRef.current?.getTracks().forEach((t) => t.stop()); streamRef.current = null; setCamOn(false); }
+
+  // Alternativa: subir una foto desde archivo/galería en vez de la cámara en vivo.
+  async function onFilePhoto(file: File) {
+    setBusy(true);
+    try {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const { path } = await uploadDocPhoto(file, ext);
+      setPhoto({ path, preview: URL.createObjectURL(file) });
+      stopCam();
+    } catch { setErr('No se pudo subir la foto.'); } finally { setBusy(false); }
+  }
 
   async function capture() {
     const v = videoRef.current; if (!v) return;
@@ -100,7 +112,11 @@ export function SignDocument({ target, onDone, onCancel }: { target: SignTarget;
               <div><button className="btn btn-primary btn-sm" style={{ marginTop: 8 }} onClick={capture} disabled={busy}>📸 Capturar</button></div>
             </div>
           ) : (
-            <button className="btn btn-ghost" onClick={startCam}>📷 Activar cámara</button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+              <button className="btn btn-ghost btn-sm" onClick={startCam}>📷 Activar cámara</button>
+              <span className="muted" style={{ fontSize: 12 }}>o</span>
+              <FilePicker onFile={onFilePhoto} accept="image/*" camera={false} fileLabel="🖼️ Subir foto" disabled={busy} />
+            </div>
           )}
         </div>
       )}

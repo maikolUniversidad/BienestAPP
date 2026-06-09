@@ -83,9 +83,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="content">{children}</div>
       </div>
 
-      {/* Menú inferior (móvil) — solo las secciones principales */}
+      {/* Menú inferior (móvil) — carrusel deslizable con todas las secciones */}
       <nav className="bottom-nav">
-        {NAV.filter((n) => n.primary).map((n) => (
+        {NAV.map((n) => (
           <Link key={n.href} href={n.href} className={pathname === n.href ? 'active' : ''}>
             <span className="ic"><Ico k={n.ic} /></span>
             <span>{n.label.split(' ')[0]}</span>

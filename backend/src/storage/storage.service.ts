@@ -41,7 +41,7 @@ export class StorageService implements OnModuleInit {
   }
 
   /** Genera una URL firmada de subida para que el cliente suba el archivo directamente. */
-  async signUpload(userId: string, kind: 'image' | 'audio', ext: string) {
+  async signUpload(userId: string, kind: 'image' | 'audio' | 'document', ext: string) {
     if (!this.client) throw new Error('Almacenamiento no disponible');
     const safeExt = (ext || 'bin').replace(/[^a-z0-9]/gi, '').slice(0, 5) || 'bin';
     const path = `${userId}/${kind}-${randomUUID()}.${safeExt}`;

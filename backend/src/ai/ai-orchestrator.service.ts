@@ -21,8 +21,9 @@ export interface OrchestratorReply {
 }
 
 export interface Attachment {
-  type: 'image' | 'audio';
+  type: 'image' | 'audio' | 'document';
   path: string;
+  name?: string;
 }
 
 /**
@@ -63,7 +64,7 @@ export class AiOrchestratorService {
     let clean = this.guardrails.sanitizeInput(params.userText);
     // Si solo hay adjuntos sin texto, lo reflejamos para que la IA lo reconozca.
     const att = params.attachments ?? [];
-    if (!clean && att.length) clean = `(El usuario compartió ${att.map((a) => (a.type === 'image' ? 'una foto' : 'una nota de voz')).join(' y ')}.)`;
+    if (!clean && att.length) clean = `(El usuario compartió ${att.map((a) => (a.type === 'image' ? 'una foto' : a.type === 'document' ? `un documento${a.name ? ' (' + a.name + ')' : ''}` : 'una nota de voz')).join(' y ')}.)`;
     const inputHash = this.guardrails.hashForLog(clean);
 
     // [2] Clasificación de riesgo + tema emocional

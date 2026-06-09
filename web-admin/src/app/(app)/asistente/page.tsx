@@ -6,8 +6,9 @@ import { api } from '../../../lib/api';
 import { uploadChatFile } from '../../../lib/storage';
 import { ChatMessage } from '../../../components/chat-message';
 import { Ico } from '../../../components/brand';
+import { FilePicker } from '../../../components/file-picker';
 
-interface Att { type: 'image' | 'audio'; path: string; previewUrl: string; }
+interface Att { type: 'image' | 'audio' | 'document'; path: string; previewUrl: string; name?: string; }
 interface ActionBtn { label: string; href: string; icon?: string; }
 interface Msg { role: 'user' | 'assistant'; content: string; theme?: string; atts?: Att[]; actions?: ActionBtn[]; }
 
@@ -54,7 +55,7 @@ export default function Asistente() {
         role: m.role,
         content: m.content,
         theme: m.emotionalTheme,
-        atts: (m.attachments ?? []).filter((a: any) => a.url).map((a: any) => ({ type: a.type, path: a.path, previewUrl: a.url })),
+        atts: (m.attachments ?? []).filter((a: any) => a.url).map((a: any) => ({ type: a.type, path: a.path, previewUrl: a.url, name: a.name })),
       })));
     } catch { /* noop */ }
   }
@@ -67,15 +68,13 @@ export default function Asistente() {
   useEffect(() => { loadConvos(); /* empieza en una conversación nueva sin crearla aún */ }, []);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs, crisis]);
 
-  async function onPhoto(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  async function addAttachment(file: File, kind: 'image' | 'document') {
     setUploading(true);
     try {
-      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-      const a = await uploadChatFile(file, 'image', ext);
-      setPending((p) => [...p, { ...a, previewUrl: URL.createObjectURL(file) }]);
-    } catch { /* noop */ } finally { setUploading(false); e.target.value = ''; }
+      const ext = (file.name.split('.').pop() || (kind === 'image' ? 'jpg' : 'pdf')).toLowerCase();
+      const a = await uploadChatFile(file, kind, ext);
+      setPending((p) => [...p, { ...a, previewUrl: kind === 'image' ? URL.createObjectURL(file) : '', name: file.name }]);
+    } catch { /* noop */ } finally { setUploading(false); }
   }
 
   async function startRec() {
@@ -123,7 +122,7 @@ export default function Asistente() {
         // Crea la conversación de forma diferida en el primer mensaje.
         let id = cid;
         if (!id) { const c = await api.startConversation(); id = c.id; setCid(id); }
-        res = await api.sendMessage(id, text, sentAtts.map(({ type, path }) => ({ type, path })));
+        res = await api.sendMessage(id, text, sentAtts.map(({ type, path, name }) => ({ type, path, name })));
         loadConvos(); // refresca títulos/orden del historial
       }
       setMsgs((m) => [...m, { role: 'assistant', content: res.message.content, theme: res.emotionalTheme, actions: res.actions ?? [] }]);
@@ -183,7 +182,9 @@ export default function Asistente() {
                 <div key={j} style={{ marginBottom: 6 }}>
                   {a.type === 'image'
                     ? <img src={a.previewUrl} alt="" style={{ maxWidth: 180, borderRadius: 10, display: 'block' }} />
-                    : <audio src={a.previewUrl} controls style={{ height: 34 }} />}
+                    : a.type === 'document'
+                      ? (a.previewUrl ? <a href={a.previewUrl} target="_blank" rel="noreferrer" className="badge" style={{ background: 'var(--niebla)', color: 'var(--tinta)' }}>📎 {a.name || 'documento'}</a> : <span className="badge" style={{ background: 'var(--niebla)', color: 'var(--tinta)' }}>📎 {a.name || 'documento'}</span>)
+                      : <audio src={a.previewUrl} controls style={{ height: 34 }} />}
                 </div>
               ))}
               {m.role === 'assistant' ? <ChatMessage content={m.content} /> : m.content}
@@ -221,7 +222,9 @@ export default function Asistente() {
             {pending.map((a, i) => (
               a.type === 'image'
                 ? <img key={i} src={a.previewUrl} alt="" style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 8 }} />
-                : <audio key={i} src={a.previewUrl} controls style={{ height: 34 }} />
+                : a.type === 'document'
+                  ? <span key={i} className="badge" style={{ background: 'var(--niebla)', color: 'var(--tinta)' }}>📎 {a.name || 'documento'}</span>
+                  : <audio key={i} src={a.previewUrl} controls style={{ height: 34 }} />
             ))}
             <span className="muted" style={{ alignSelf: 'center', fontSize: 12 }}>adjunto listo</span>
           </div>
@@ -229,9 +232,10 @@ export default function Asistente() {
 
         <div className="chat-input">
           {!ephemeral && (
-            <label className="btn btn-ghost btn-sm" style={{ cursor: 'pointer' }} title="Foto">
-              📷<input type="file" accept="image/*" hidden onChange={onPhoto} />
-            </label>
+            <>
+              <FilePicker onFile={(f) => addAttachment(f, 'image')} accept="image/*" cameraLabel="📷" fileLabel="🖼️" />
+              <FilePicker onFile={(f) => addAttachment(f, 'document')} accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.csv" camera={false} fileLabel="📎" />
+            </>
           )}
           {!recording
             ? <button className="btn btn-ghost btn-sm" onClick={startRec} title="Grabar audio">🎙️</button>

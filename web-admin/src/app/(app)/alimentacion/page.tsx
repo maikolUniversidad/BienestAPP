@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
 import { uploadFoodPhoto } from '../../../lib/storage';
+import { FilePicker } from '../../../components/file-picker';
 
 const MEALS = [
   { key: 'desayuno', label: 'Desayuno', ic: '🌅' },
@@ -33,7 +34,6 @@ export default function Alimentacion() {
   const [msg, setMsg] = useState<string | null>(null);
   const [measure, setMeasure] = useState({ type: 'weight', value: '' });
   const [targets, setTargets] = useState({ calories: '', weight: '' });
-  const fileRef = useRef<HTMLInputElement>(null);
 
   function flash(m: string) { setMsg(m); setTimeout(() => setMsg(null), 3000); }
   async function load() {
@@ -49,9 +49,7 @@ export default function Alimentacion() {
   }
   useEffect(() => { load(); }, []);
 
-  async function onPhoto(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  async function onPhoto(file: File) {
     setBusy(true); setResult(null);
     try {
       const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
@@ -60,7 +58,7 @@ export default function Alimentacion() {
       setResult(r);
       flash(r.vision ? 'Comida analizada por IA ✓' : 'Estimación registrada (IA de visión no disponible)');
       setDesc(''); load();
-    } catch { flash('No se pudo analizar la foto.'); } finally { setBusy(false); if (fileRef.current) fileRef.current.value = ''; }
+    } catch { flash('No se pudo analizar la foto.'); } finally { setBusy(false); }
   }
 
   async function analyzeText() {
@@ -122,12 +120,9 @@ export default function Alimentacion() {
             </button>
           ))}
         </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <label className="btn btn-primary" style={{ cursor: 'pointer' }}>
-            📷 Tomar/Subir foto
-            <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={onPhoto} disabled={busy} />
-          </label>
-          <input className="field" style={{ marginTop: 0, flex: 1, minWidth: 180 }} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="…o describe la comida (ej: arroz con pollo y ensalada)" />
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <FilePicker onFile={onPhoto} accept="image/*" cameraLabel="📷 Cámara" fileLabel="🖼️ Galería" disabled={busy} size="md" />
+          <input className="field" style={{ marginTop: 0, flex: 1, minWidth: 160 }} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="…o describe la comida (ej: arroz con pollo)" />
           <button className="btn btn-ghost" onClick={analyzeText} disabled={busy}>{busy ? 'Analizando…' : 'Analizar texto'}</button>
         </div>
 

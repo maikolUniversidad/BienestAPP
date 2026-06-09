@@ -8,8 +8,9 @@ import { AiOrchestratorService, Attachment } from './ai-orchestrator.service';
 import { LlmMessage } from './llm/llm.provider';
 
 class AttachmentDto {
-  @IsIn(['image', 'audio']) type: 'image' | 'audio';
+  @IsIn(['image', 'audio', 'document']) type: 'image' | 'audio' | 'document';
   @IsString() path: string;
+  @IsOptional() @IsString() name?: string;
 }
 
 class SendMessageDto {
@@ -35,7 +36,7 @@ class StartConversationDto {
 }
 
 class UploadUrlDto {
-  @IsIn(['image', 'audio']) kind: 'image' | 'audio';
+  @IsIn(['image', 'audio', 'document']) kind: 'image' | 'audio' | 'document';
   @IsString() ext: string;
 }
 
