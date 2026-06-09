@@ -57,7 +57,17 @@ export default function Campo() {
 
   const a = me?.agent;
   const pending = (me?.visits ?? []).filter((v: any) => v.status === 'scheduled');
-  const markers: MapMarker[] = a ? [{ id: 'me', lat: a.lat, lng: a.lng, label: 'Tú', sub: a.zone, color: statusColor(a.status) }] : [];
+  // Mapa: tu ubicación + cada visita con coordenadas (marcador coral).
+  const markers: MapMarker[] = [
+    ...(a ? [{ id: 'me', lat: a.lat, lng: a.lng, label: '📍 Tú', sub: a.zone, color: statusColor(a.status) }] : []),
+    ...pending.filter((v: any) => v.lat != null && v.lng != null).map((v: any, i: number) => ({
+      id: v.id, lat: v.lat, lng: v.lng, label: `${i + 1}. ${v.reason || 'Visita'}`, sub: `${v.name} · ${v.address || ''}`, color: '#FF7A59',
+    })),
+  ];
+  function ruta(v: any) {
+    const dest = v.lat != null && v.lng != null ? `${v.lat},${v.lng}` : encodeURIComponent(v.address || '');
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${dest}`, '_blank');
+  }
 
   return (
     <>
@@ -94,6 +104,7 @@ export default function Campo() {
                 {v.reason && <div className="muted" style={{ fontSize: 12 }}>Motivo: {v.reason}</div>}
                 <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                   <button className="btn btn-primary btn-sm" onClick={() => setOpenVisit(openVisit === v.id ? null : v.id)}>{openVisit === v.id ? 'Cerrar' : 'Atender'}</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => ruta(v)}>🗺️ Ruta</button>
                   <button className="btn btn-danger btn-sm" onClick={() => escalate(v.id, 'ambulance')}>🚑 Ambulancia</button>
                   <button className="btn btn-ghost btn-sm" onClick={() => escalate(v.id, 'urgent_care')}>⚠️ Atención mayor</button>
                 </div>

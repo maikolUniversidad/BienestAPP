@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Injectable, Module, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NotificationType, RoleName } from '@prisma/client';
-import { IsIn, IsObject, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { PrismaService } from '../prisma/prisma.service';
@@ -18,6 +18,8 @@ class VisitDto {
   @IsString() scheduledAt: string;
   @IsOptional() @IsString() address?: string;
   @IsOptional() @IsString() reason?: string;
+  @IsOptional() @IsNumber() lat?: number;
+  @IsOptional() @IsNumber() lng?: number;
 }
 class VisitRegisterDto {
   @IsOptional() @IsString() notes?: string;
@@ -50,7 +52,7 @@ export class AsistencialService {
 
   // ───────── Atención domiciliaria ─────────
   async scheduleVisit(by: string, dto: VisitDto) {
-    const v = await this.prisma.homeVisit.create({ data: { userId: dto.userId, professionalId: by, scheduledAt: new Date(dto.scheduledAt), address: dto.address, reason: dto.reason, createdBy: by } });
+    const v = await this.prisma.homeVisit.create({ data: { userId: dto.userId, professionalId: by, scheduledAt: new Date(dto.scheduledAt), address: dto.address, lat: dto.lat, lng: dto.lng, reason: dto.reason, createdBy: by } });
     await this.notifications.notify({ userId: dto.userId, type: NotificationType.REMINDER, category: 'appointment', title: '🏠 Visita domiciliaria programada', body: `Tu atención en casa está programada para el ${new Date(v.scheduledAt).toLocaleString('es-CO')}.`, href: '/citas', data: { kind: 'homevisit', visitId: v.id } }).catch(() => undefined);
     return v;
   }

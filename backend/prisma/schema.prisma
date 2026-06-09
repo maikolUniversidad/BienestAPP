@@ -1108,8 +1108,10 @@ model HomeVisit {
   userId         String
   professionalId String?
   scheduledAt    DateTime
-  status         String   @default("scheduled") // scheduled | done | cancelled
+  status         String   @default("scheduled") // scheduled | done | cancelled | escalated
   address        String?
+  lat            Float?
+  lng            Float?
   reason         String?
   notes          String?
   vitals         Json?
