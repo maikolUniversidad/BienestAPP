@@ -252,6 +252,33 @@ export class AiOrchestratorService {
     return validated.content;
   }
 
+  /**
+   * Interpretación responsable (NO diagnóstica) del resultado de una encuesta/quiz.
+   * Pasa por validación de salida. En riesgo alto usa un mensaje de derivación seguro.
+   */
+  async interpretTest(params: { title: string; band: string; riskLevel: RiskLevel }): Promise<string> {
+    if (this.classifier.isCrisis(params.riskLevel)) {
+      return 'Tu resultado sugiere que sería muy valioso hablar pronto con un profesional. No estás solo/a, y dar este paso es un acto de cuidado.';
+    }
+    let raw = '';
+    try {
+      raw = await this.llm.chat([
+        {
+          role: 'system',
+          content:
+            'Eres un acompañante de bienestar. Interpreta de forma BREVE (2–3 frases), empática y ' +
+            'responsable el resultado orientativo de una encuesta de autocuidado. NUNCA diagnostiques ' +
+            'ni uses términos clínicos; no es una evaluación médica. Sugiere un pequeño paso de ' +
+            'autocuidado acorde a la banda. Español cercano.',
+        },
+        { role: 'user', content: `Encuesta: "${params.title}". Banda orientativa del resultado: ${params.band}.` },
+      ]);
+    } catch {
+      return 'Gracias por completar la encuesta. Es un resultado orientativo que te ayuda a conocerte; recuerda que no reemplaza una valoración profesional.';
+    }
+    return this.validator.validate(raw).content;
+  }
+
   /** Resumen empático de los textos de diario de la semana. */
   async summarizeWeek(text: string) {
     if (!text.trim()) return '';

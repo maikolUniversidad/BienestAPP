@@ -14,6 +14,7 @@ export default function Encuestas() {
   const [description, setDescription] = useState('');
   const [questions, setQuestions] = useState<Q[]>([{ id: 'q1', text: '', options: [{ label: 'Nunca', value: 0 }, { label: 'A veces', value: 1 }, { label: 'Frecuente', value: 2 }] }]);
   const [msg, setMsg] = useState<string | null>(null);
+  const [results, setResults] = useState<any>(null);
 
   async function load() { setList(await api.adminTests().catch(() => [])); }
   useEffect(() => { load(); }, []);
@@ -34,6 +35,7 @@ export default function Encuestas() {
     setTimeout(() => setMsg(null), 3000); load();
   }
   async function toggle(t: any) { await api.toggleTest(t.id, !t.active); load(); }
+  async function viewResults(id: string) { setResults(await api.surveyResults(id).catch(() => null)); }
 
   return (
     <>
@@ -88,13 +90,42 @@ export default function Encuestas() {
                 <td className="muted">{t.category}</td>
                 <td>{(t.questions ?? []).length}</td>
                 <td><span className="badge" style={{ background: t.active ? 'var(--salvia)' : 'var(--gris)' }}>{t.active ? 'Activa' : 'Inactiva'}</span></td>
-                <td><button className="link" onClick={() => toggle(t)}>{t.active ? 'Desactivar' : 'Activar'}</button></td>
+                <td><span style={{ display: 'flex', gap: 10 }}><button className="link" onClick={() => viewResults(t.id)}>Resultados</button><button className="link" onClick={() => toggle(t)}>{t.active ? 'Desactivar' : 'Activar'}</button></span></td>
               </tr>
             ))}
             {list.length === 0 && <tr><td colSpan={5}><div className="empty">Sin encuestas. Crea la primera.</div></td></tr>}
           </tbody>
         </table>
       </div>
+
+      {results && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(27,42,74,.55)', display: 'grid', placeItems: 'center', zIndex: 100, padding: 20 }} onClick={() => setResults(null)}>
+          <div className="card" style={{ width: 600, maxWidth: '94vw', maxHeight: '86vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <h3 style={{ fontFamily: 'Fraunces', color: 'var(--tinta)' }}>Resultados · {results.title}</h3>
+              <button className="link" onClick={() => setResults(null)}>Cerrar ✕</button>
+            </div>
+            <div className="grid grid-3" style={{ marginBottom: 14 }}>
+              <div className="card stat"><div className="lbl">Respuestas</div><div className="val">{results.total}</div></div>
+              <div className="card stat"><div className="lbl">Puntaje prom.</div><div className="val">{results.avgScore}</div></div>
+              <div className="card stat"><div className="lbl">Riesgo alto</div><div className="val">{results.highRisk}</div></div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+              {Object.entries(results.byBand).map(([b, n]: any) => <span key={b} className="badge-soft badge">{b}: {n}</span>)}
+            </div>
+            <h4 style={{ fontFamily: 'Fraunces', color: 'var(--tinta)', marginBottom: 8 }}>Interpretaciones recientes (IA)</h4>
+            <div style={{ display: 'grid', gap: 8 }}>
+              {results.recent.map((r: any, i: number) => (
+                <div key={i} style={{ borderBottom: '1px solid var(--line)', paddingBottom: 8 }}>
+                  <span className="badge-soft badge">{r.band}</span> <span className="muted" style={{ fontSize: 12 }}>{new Date(r.createdAt).toLocaleDateString()}</span>
+                  {r.interpretation && <p style={{ fontSize: 14, marginTop: 4, color: 'var(--tinta)' }}>💡 {r.interpretation}</p>}
+                </div>
+              ))}
+              {results.recent.length === 0 && <p className="muted">Sin respuestas aún.</p>}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

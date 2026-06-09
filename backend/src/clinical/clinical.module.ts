@@ -54,7 +54,7 @@ export class ClinicalService {
       where: { id: userId },
       select: { email: true, createdAt: true, profile: true },
     });
-    const [moods, habits, goals, risks, journalCount, notes, meds] = await Promise.all([
+    const [moods, habits, goals, risks, journalCount, notes, meds, testResults] = await Promise.all([
       this.prisma.moodEntry.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 7 }),
       this.prisma.habit.findMany({ where: { userId, active: true }, select: { name: true, streak: true } }),
       this.prisma.goal.findMany({ where: { userId, status: { not: 'archived' } }, orderBy: { createdAt: 'desc' } }),
@@ -62,6 +62,7 @@ export class ClinicalService {
       this.prisma.journalEntry.count({ where: { userId, deletedAt: null } }),
       this.prisma.clinicalNote.findMany({ where: { patientId: userId }, orderBy: { createdAt: 'desc' }, take: 30 }),
       this.prisma.medicationItem.count({ where: { userId, active: true } }),
+      this.prisma.testResult.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 10, include: { test: { select: { title: true } } } }),
     ]);
     await this.audit.log({ actorId, action: 'clinical.patient.view', resource: `User:${userId}` });
     return {
@@ -75,6 +76,7 @@ export class ClinicalService {
       journalCount,
       activeMeds: meds,
       notes,
+      testResults: testResults.map((t) => ({ id: t.id, title: t.test.title, band: t.band, score: t.score, riskLevel: t.riskLevel, interpretation: t.interpretation, createdAt: t.createdAt })),
     };
   }
 

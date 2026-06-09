@@ -560,11 +560,12 @@ model TestResult {
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   testId    String
   test      WellnessTest @relation(fields: [testId], references: [id], onDelete: Cascade)
-  answers   Json
-  score     Int
-  band      String // interpretación orientativa
-  riskLevel RiskLevel    @default(NONE)
-  createdAt DateTime     @default(now())
+  answers        Json
+  score          Int
+  band           String // interpretación orientativa
+  riskLevel      RiskLevel    @default(NONE)
+  interpretation String? // resumen responsable generado por IA
+  createdAt      DateTime     @default(now())
 
   @@index([userId, testId])
 }

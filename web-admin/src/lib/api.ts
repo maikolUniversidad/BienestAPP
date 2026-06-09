@@ -113,6 +113,8 @@ export const api = {
   test: (id: string) => request<any>(`/tests/${id}`),
   submitTest: (id: string, answers: Record<string, number>) =>
     request<any>(`/tests/${id}/submit`, { method: 'POST', body: JSON.stringify({ answers }) }),
+  myTestResults: () => request<any[]>('/tests/results/mine'),
+  surveyResults: (id: string) => request<any>(`/admin/tests/${id}/results`),
   // Medicación (profesional)
   medProPatients: () => request<any[]>('/medications/pro/patients'),
   medProAlerts: () => request<any[]>('/medications/pro/alerts'),

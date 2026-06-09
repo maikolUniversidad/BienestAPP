@@ -7,6 +7,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { AiModule } from '../ai/ai.module';
 import { EscalationService, CrisisProtocol } from '../ai/escalation/escalation.service';
+import { AiOrchestratorService } from '../ai/ai-orchestrator.service';
 
 class SubmitTestDto {
   @IsObject() answers: Record<string, number>; // { questionId: value }
@@ -27,6 +28,7 @@ export class TestsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly escalation: EscalationService,
+    private readonly orchestrator: AiOrchestratorService,
   ) {}
 
   list() {
@@ -55,8 +57,11 @@ export class TestsService {
     if (band === 'cuidado') riskLevel = RiskLevel.HIGH;
     else if (band === 'atención') riskLevel = RiskLevel.MEDIUM;
 
+    // Interpretación responsable generada por IA.
+    const interpretation = await this.orchestrator.interpretTest({ title: test.title, band, riskLevel });
+
     const result = await this.prisma.testResult.create({
-      data: { userId, testId, answers: answers as object, score, band, riskLevel },
+      data: { userId, testId, answers: answers as object, score, band, riskLevel, interpretation },
     });
 
     let crisis: CrisisProtocol | null = null;
@@ -74,12 +79,44 @@ export class TestsService {
       score,
       band,
       riskLevel,
+      interpretation,
       message:
         riskLevel === RiskLevel.HIGH
           ? 'Tu resultado sugiere que sería valioso hablar con un profesional. No estás solo/a.'
           : 'Resultado orientativo. Recuerda que no reemplaza una valoración profesional.',
       crisisProtocol: crisis,
       recommendations: this.recommend(band),
+    };
+  }
+
+  /** Resultados propios del afiliado (con interpretación). */
+  async myResults(userId: string) {
+    const results = await this.prisma.testResult.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      include: { test: { select: { title: true, category: true } } },
+    });
+    return results.map((r) => ({
+      id: r.id, title: r.test.title, category: r.test.category,
+      band: r.band, score: r.score, riskLevel: r.riskLevel, interpretation: r.interpretation, createdAt: r.createdAt,
+    }));
+  }
+
+  /** Resultados agregados de una encuesta (admin) — "dashboard interpretado". */
+  async surveyResults(testId: string) {
+    const test = await this.prisma.wellnessTest.findUnique({ where: { id: testId }, select: { title: true } });
+    const results = await this.prisma.testResult.findMany({ where: { testId }, orderBy: { createdAt: 'desc' }, take: 200 });
+    const byBand: Record<string, number> = {};
+    results.forEach((r) => { byBand[r.band] = (byBand[r.band] ?? 0) + 1; });
+    const avg = results.length ? Math.round((results.reduce((s, r) => s + r.score, 0) / results.length) * 10) / 10 : 0;
+    return {
+      title: test?.title ?? 'Encuesta',
+      total: results.length,
+      avgScore: avg,
+      byBand,
+      highRisk: results.filter((r) => r.riskLevel === 'HIGH' || r.riskLevel === 'CRITICAL').length,
+      recent: results.slice(0, 20).map((r) => ({ band: r.band, score: r.score, interpretation: r.interpretation, createdAt: r.createdAt })),
     };
   }
 
@@ -140,6 +177,10 @@ export class TestsController {
   list() {
     return this.tests.list();
   }
+  @Get('results/mine')
+  myResults(@CurrentUser('id') userId: string) {
+    return this.tests.myResults(userId);
+  }
   @Get(':id')
   getOne(@Param('id') id: string) {
     return this.tests.getOne(id);
@@ -167,6 +208,10 @@ export class TestsAdminController {
   @Patch(':id')
   toggle(@Param('id') id: string, @Body() dto: ToggleTestDto) {
     return this.tests.toggleActive(id, dto.active);
+  }
+  @Get(':id/results')
+  results(@Param('id') id: string) {
+    return this.tests.surveyResults(id);
   }
 }
 

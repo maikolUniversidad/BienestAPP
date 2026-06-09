@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '../../../../lib/api';
 
-const TABS = ['Resumen', 'Alertas', 'Hábitos', 'Metas', 'Notas'] as const;
+const TABS = ['Resumen', 'Alertas', 'Tests', 'Hábitos', 'Metas', 'Notas'] as const;
 type Tab = (typeof TABS)[number];
 
 const MOOD: Record<string, string> = {
@@ -90,6 +90,22 @@ export default function PatientProfile() {
               {d.risks.length === 0 && <tr><td colSpan={4}><div className="empty">Sin alertas.</div></td></tr>}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {tab === 'Tests' && (
+        <div style={{ display: 'grid', gap: 10 }}>
+          {(d.testResults ?? []).map((t: any) => (
+            <div key={t.id} className="card">
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <b style={{ color: 'var(--tinta)' }}>{t.title}</b>
+                <span className={`badge ${t.riskLevel}`}>{t.band}</span>
+              </div>
+              {t.interpretation && <p className="muted" style={{ fontSize: 14, marginTop: 6 }}>💡 {t.interpretation}</p>}
+              <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>Puntaje {t.score} · {new Date(t.createdAt).toLocaleString()}</div>
+            </div>
+          ))}
+          {(d.testResults ?? []).length === 0 && <p className="muted">El paciente no ha respondido encuestas.</p>}
         </div>
       )}
 

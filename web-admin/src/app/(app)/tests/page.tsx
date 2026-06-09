@@ -12,11 +12,13 @@ const BAND: Record<string, { l: string; c: string }> = {
 
 export default function Tests() {
   const [list, setList] = useState<any[]>([]);
+  const [mine, setMine] = useState<any[]>([]);
   const [active, setActive] = useState<any>(null); // test abierto
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [result, setResult] = useState<any>(null);
 
-  useEffect(() => { api.tests().then(setList).catch(() => setList([])); }, []);
+  function loadMine() { api.myTestResults().then(setMine).catch(() => setMine([])); }
+  useEffect(() => { api.tests().then(setList).catch(() => setList([])); loadMine(); }, []);
 
   async function openTest(id: string) {
     setResult(null); setAnswers({});
@@ -39,6 +41,12 @@ export default function Tests() {
           <div style={{ fontSize: 40 }}>🌱</div>
           <h3 style={{ fontFamily: 'Fraunces', color: 'var(--tinta)', margin: '8px 0' }}>Resultado orientativo</h3>
           <span className="badge" style={{ background: band.c, fontSize: 14 }}>{band.l}</span>
+          {result.interpretation && (
+            <div style={{ margin: '14px 0', background: 'var(--durazno)', borderRadius: 12, padding: 14, textAlign: 'left' }}>
+              <div className="muted" style={{ fontSize: 12 }}>💡 Interpretación</div>
+              <p style={{ color: 'var(--tinta)', marginTop: 4 }}>{result.interpretation}</p>
+            </div>
+          )}
           <p className="muted" style={{ margin: '14px 0' }}>{result.message}</p>
           <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
             {(result.recommendations ?? []).map((r: string, i: number) => <span key={i} className="chip" style={{ cursor: 'default' }}>{r}</span>)}
@@ -49,7 +57,7 @@ export default function Tests() {
               <div className="lines">{result.crisisProtocol.emergencyLines?.map((l: any) => <a key={l.number} className="pill-line" href={`tel:${l.number}`}>{l.label} {l.number}</a>)}</div>
             </div>
           )}
-          <button className="btn btn-ghost" style={{ marginTop: 16 }} onClick={() => { setActive(null); setResult(null); }}>Volver a tests</button>
+          <button className="btn btn-ghost" style={{ marginTop: 16 }} onClick={() => { setActive(null); setResult(null); loadMine(); }}>Volver a tests</button>
         </div>
       </>
     );
@@ -90,6 +98,27 @@ export default function Tests() {
         ))}
         {list.length === 0 && <p className="muted">No hay tests disponibles por ahora.</p>}
       </div>
+
+      {mine.length > 0 && (
+        <>
+          <h3 style={{ fontFamily: 'Fraunces', color: 'var(--tinta)', margin: '24px 0 12px' }}>Mis resultados</h3>
+          <div style={{ display: 'grid', gap: 10 }}>
+            {mine.map((r) => {
+              const band = BAND[r.band] ?? { l: r.band, c: 'var(--azul)' };
+              return (
+                <div key={r.id} className="card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <b style={{ color: 'var(--tinta)' }}>{r.title}</b>
+                    <span className="badge" style={{ background: band.c }}>{band.l}</span>
+                  </div>
+                  {r.interpretation && <p className="muted" style={{ fontSize: 14, marginTop: 6 }}>💡 {r.interpretation}</p>}
+                  <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>{new Date(r.createdAt).toLocaleDateString()}</div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </>
   );
 }
