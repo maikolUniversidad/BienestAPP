@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
 
-const ROLES = ['AFFILIATE', 'CALLCENTER_OPERATOR', 'PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'AUDITOR'];
+const ROLES = ['AFFILIATE', 'CALLCENTER_OPERATOR', 'PSYCHOLOGIST', 'PHYSICIAN', 'NUTRITIONIST', 'NURSE', 'SOCIAL_WORKER', 'EPS_ADMIN', 'AUDITOR'];
 const ROLE_LABEL: Record<string, string> = {
   AFFILIATE: 'Afiliado', CALLCENTER_OPERATOR: 'Operador', PSYCHOLOGIST: 'Psicólogo',
-  PHYSICIAN: 'Médico', EPS_ADMIN: 'Admin', AUDITOR: 'Auditor', SUPERADMIN: 'Superadmin',
+  PHYSICIAN: 'Médico', NUTRITIONIST: 'Nutricionista', NURSE: 'Enfermería', SOCIAL_WORKER: 'Trabajo social',
+  EPS_ADMIN: 'Admin', AUDITOR: 'Auditor', SUPERADMIN: 'Superadmin',
 };
 
 export default function Usuarios() {

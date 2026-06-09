@@ -10,10 +10,10 @@ import { NotificationsBell } from '../../components/notifications-bell';
 const NAV = [
   { href: '/overview', label: 'Resumen', ic: 'dashboard', roles: ['EPS_ADMIN', 'SUPERADMIN', 'AUDITOR'] },
   { href: '/director', label: 'Dirección', ic: 'progreso', roles: ['EPS_ADMIN', 'SUPERADMIN'] },
-  { href: '/clinico', label: 'Clínico', ic: 'user', roles: ['PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
+  { href: '/clinico', label: 'Clínico', ic: 'user', roles: ['PSYCHOLOGIST', 'PHYSICIAN', 'NUTRITIONIST', 'NURSE', 'SOCIAL_WORKER', 'EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/callcenter', label: 'Call Center', ic: 'call', roles: ['CALLCENTER_OPERATOR', 'PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
-  { href: '/medicamentos', label: 'Medicación', ic: 'med', roles: ['PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
-  { href: '/nutricion', label: 'Nutrición', ic: 'food', roles: ['PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
+  { href: '/medicamentos', label: 'Medicación', ic: 'med', roles: ['PSYCHOLOGIST', 'PHYSICIAN', 'NURSE', 'EPS_ADMIN', 'SUPERADMIN'] },
+  { href: '/nutricion', label: 'Nutrición', ic: 'food', roles: ['NUTRITIONIST', 'PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/alerts', label: 'Alertas de riesgo', ic: 'alerts', roles: ['EPS_ADMIN', 'PSYCHOLOGIST', 'PHYSICIAN', 'SUPERADMIN'] },
   { href: '/usuarios', label: 'Usuarios', ic: 'users', roles: ['EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/encuestas', label: 'Encuestas', ic: 'tests', roles: ['EPS_ADMIN', 'SUPERADMIN'] },

@@ -23,6 +23,9 @@ enum RoleName {
   CALLCENTER_OPERATOR
   PSYCHOLOGIST
   PHYSICIAN
+  NUTRITIONIST
+  NURSE
+  SOCIAL_WORKER
   EPS_ADMIN
   SUPERADMIN
   AUDITOR
@@ -214,6 +217,8 @@ model AffiliateProfile {
   documentNumber String?  // SENSITIVE
   birthDate     DateTime?
   phone         String?
+  avatarPath    String? // ruta en Supabase Storage (avatar)
+  bio           String?
   // preferencias de bienestar (objetivos, áreas de interés, recordatorios)
   preferences   Json?
   createdAt     DateTime  @default(now())

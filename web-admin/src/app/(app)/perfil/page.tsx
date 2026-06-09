@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api, logout } from '../../../lib/api';
 import { Hilo } from '../../../components/brand';
+import { uploadAvatar } from '../../../lib/storage';
 
 const CONSENT_LABEL: Record<string, string> = {
   INFORMED_CONSENT: 'Consentimiento informado',
@@ -20,6 +21,9 @@ export default function Perfil() {
   const [contacts, setContacts] = useState<any[]>([]);
   const [consents, setConsents] = useState<any[]>([]);
   const [form, setForm] = useState({ name: '', phone: '', relationship: '' });
+  const [activity, setActivity] = useState<any>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
   async function load() {
@@ -27,8 +31,22 @@ export default function Perfil() {
     setPet(await api.pet().catch(() => null));
     setContacts(await api.emergencyContacts().catch(() => []));
     setConsents(await api.consents().catch(() => []));
+    setActivity(await api.profileActivity().catch(() => null));
   }
   useEffect(() => { load(); }, []);
+
+  async function onAvatar(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const { path } = await uploadAvatar(file, ext);
+      await api.updateProfile({ avatarPath: path });
+      setAvatarPreview(URL.createObjectURL(file));
+      setMsg('Foto actualizada ✓'); setTimeout(() => setMsg(null), 2500); load();
+    } catch { setMsg('No se pudo subir la foto'); } finally { setUploading(false); e.target.value = ''; }
+  }
 
   async function addContact() {
     if (!form.name.trim() || !form.phone.trim()) return;
@@ -54,10 +72,17 @@ export default function Perfil() {
         {/* Datos + mascota */}
         <div className="card">
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 60, height: 60, borderRadius: 18, background: 'var(--durazno)', display: 'grid', placeItems: 'center' }}><Hilo size={34} /></div>
+            <label style={{ position: 'relative', cursor: 'pointer' }} title="Cambiar foto">
+              {avatarPreview || profile?.avatarUrl
+                ? <img className="avatar-lg" src={avatarPreview ?? profile.avatarUrl} alt="" />
+                : <div className="avatar-lg" style={{ background: 'var(--durazno)', display: 'grid', placeItems: 'center' }}><Hilo size={40} /></div>}
+              <span style={{ position: 'absolute', right: -4, bottom: -4, background: 'var(--coral)', color: '#fff', width: 28, height: 28, borderRadius: 999, display: 'grid', placeItems: 'center', fontSize: 13 }}>{uploading ? '…' : '📷'}</span>
+              <input type="file" accept="image/*" hidden onChange={onAvatar} />
+            </label>
             <div>
               <h3 style={{ fontFamily: 'Fraunces', color: 'var(--tinta)' }}>{profile ? `${profile.firstName} ${profile.lastName}` : 'Afiliado'}</h3>
               <p className="muted" style={{ fontSize: 13 }}>{profile?.phone || 'Sin teléfono registrado'}</p>
+              {profile?.bio && <p className="muted" style={{ fontSize: 13, marginTop: 2 }}>{profile.bio}</p>}
             </div>
           </div>
           <div style={{ marginTop: 16, background: 'var(--bg)', borderRadius: 14, padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -106,6 +131,28 @@ export default function Perfil() {
           <button className="btn btn-primary btn-sm" onClick={addContact}>Agregar</button>
         </div>
       </div>
+
+      {/* Conexión con la comunidad */}
+      <div className="card" style={{ marginTop: 18, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+        <div style={{ width: 56, height: 56, borderRadius: 16, background: 'var(--durazno)', display: 'grid', placeItems: 'center', fontSize: 24 }}>🤝</div>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <h3 style={{ fontFamily: 'Fraunces', color: 'var(--tinta)' }}>Conéctate con la comunidad</h3>
+          <p className="muted" style={{ fontSize: 14 }}>
+            No estás solo en esto. {activity?.communityPosts ? `Has compartido ${activity.communityPosts} publicación(es).` : 'Comparte tu proceso y apoya a otros.'}
+          </p>
+        </div>
+        <Link className="btn btn-primary btn-sm" href="/comunidad">Ir a la comunidad →</Link>
+      </div>
+
+      {/* Actividad */}
+      {activity && (
+        <div className="grid grid-4" style={{ marginTop: 18 }}>
+          <div className="card stat"><div className="lbl">Ánimo registrado</div><div className="val">{activity.moodEntries}</div></div>
+          <div className="card stat"><div className="lbl">Entradas de diario</div><div className="val">{activity.journalEntries}</div></div>
+          <div className="card stat"><div className="lbl">Hábitos cumplidos</div><div className="val">{activity.habitCompletions}</div></div>
+          <div className="card stat"><div className="lbl">Publicaciones</div><div className="val">{activity.communityPosts}</div></div>
+        </div>
+      )}
 
       <button className="btn btn-ghost" style={{ marginTop: 18 }} onClick={logout}>Cerrar sesión</button>
     </>

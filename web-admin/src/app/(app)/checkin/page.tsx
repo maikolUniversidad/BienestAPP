@@ -44,7 +44,7 @@ export default function CheckIn() {
 
       {!saved ? (
         <div className="card" style={{ maxWidth: 620 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+          <div className="mood-grid">
             {EMOTIONS.map((em) => (
               <button key={em.k} onClick={() => setEmotion(em.k)} className="mood-btn" style={emotion === em.k ? { background: 'var(--coral)', color: '#fff', borderColor: 'var(--coral)' } : {}}>
                 <div style={{ fontSize: 30 }}>{em.e}</div>

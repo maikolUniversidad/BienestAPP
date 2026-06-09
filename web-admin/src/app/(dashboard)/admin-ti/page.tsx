@@ -5,7 +5,8 @@ import { api } from '../../../lib/api';
 
 const ROLE_LABEL: Record<string, string> = {
   AFFILIATE: 'Afiliado', CALLCENTER_OPERATOR: 'Operador call center', PSYCHOLOGIST: 'Psicólogo',
-  PHYSICIAN: 'Médico', EPS_ADMIN: 'Administrador EPS', AUDITOR: 'Auditor', SUPERADMIN: 'Superadministrador',
+  PHYSICIAN: 'Médico', NUTRITIONIST: 'Nutricionista', NURSE: 'Enfermería', SOCIAL_WORKER: 'Trabajo social',
+  EPS_ADMIN: 'Administrador EPS', AUDITOR: 'Auditor', SUPERADMIN: 'Superadministrador',
 };
 
 export default function AdminTI() {

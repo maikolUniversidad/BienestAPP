@@ -201,8 +201,12 @@ tbody tr:hover { background: #FBF8F3; }
   @keyframes sosBeat { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
 
   /* Spinner reutilizable */
-  .spin { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--niebla); border-top-color: var(--coral); border-radius: 50%; animation: spin .7s linear infinite; }
+  .spin { display: inline-block; width: 22px; height: 22px; border: 2px solid var(--niebla); border-top-color: var(--coral); border-radius: 50%; animation: spin .7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Flotación (splash/logo) */
+  .float { animation: float 5s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 }
 
 /* Botones con brillo (también sin motion: solo en hover) */
@@ -218,3 +222,28 @@ tbody tr:hover { background: #FBF8F3; }
 
 /* Anillos de progreso suaves */
 svg circle { transition: stroke-dashoffset .5s cubic-bezier(.16,1,.3,1); }
+
+/* ===================== RESPONSIVE FIXES ===================== */
+/* Colapsa cualquier grid con columnas fijas en línea a 1 columna en móvil.
+   Usa !important para vencer al style inline. */
+@media (max-width: 760px) {
+  .stack-mobile { grid-template-columns: 1fr !important; }
+}
+/* Cuadrículas de "pasos/camino" con muchas columnas: scroll horizontal en móvil */
+@media (max-width: 680px) {
+  .scroll-x-mobile { display: flex !important; overflow-x: auto; gap: 12px; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
+  .scroll-x-mobile > * { flex: 0 0 30%; min-width: 110px; }
+}
+/* Imágenes y media nunca desbordan */
+img, audio, video, svg { max-width: 100%; }
+audio { width: 100%; }
+/* El page-head largo no rompe en móvil */
+@media (max-width: 600px) {
+  .page-head h2 { word-break: break-word; }
+  .chat-input .field { min-width: 0; }
+  .btn { white-space: nowrap; }
+}
+
+/* Avatar de perfil */
+.avatar { width: 64px; height: 64px; border-radius: 18px; object-fit: cover; background: var(--durazno); }
+.avatar-lg { width: 92px; height: 92px; border-radius: 24px; object-fit: cover; }

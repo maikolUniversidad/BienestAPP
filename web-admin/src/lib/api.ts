@@ -195,6 +195,12 @@ export const api = {
   // Perfil / privacidad
   profile: () => request<any>('/profile'),
   updateProfile: (patch: any) => request('/profile', { method: 'PUT', body: JSON.stringify(patch) }),
+  profileActivity: () => request<any>('/profile/activity'),
+  profileAvatarUrl: (_kind: 'image' | 'audio', ext: string) =>
+    request<{ path: string; token: string; signedUrl: string }>('/profile/avatar-url', {
+      method: 'POST',
+      body: JSON.stringify({ kind: 'image', ext }),
+    }),
   consents: () => request<any[]>('/consents'),
   grantConsent: (type: string) =>
     request('/consents', { method: 'POST', body: JSON.stringify({ type, version: '1.0', granted: true }) }),

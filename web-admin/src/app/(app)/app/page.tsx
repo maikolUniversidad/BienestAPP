@@ -82,7 +82,7 @@ export default function AffiliateHome() {
       </div>
 
       {/* PASO DE HOY + ASISTENTE */}
-      <div className="grid" style={{ gridTemplateColumns: '1.6fr 1fr', marginBottom: 26 }}>
+      <div className="grid stack-mobile" style={{ gridTemplateColumns: '1.6fr 1fr', marginBottom: 26 }}>
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div><h3 style={S.h3}>Tu paso de hoy</h3><p className="muted">Solo necesitas esto ahora. Nada más.</p></div>
@@ -125,7 +125,7 @@ export default function AffiliateHome() {
           <div><h3 style={S.h3}>Tu camino de bienestar</h3><p className="muted">Cada paso cuenta. Avanzamos juntos, sin apuros.</p></div>
           <div style={{ textAlign: 'right' }}><div className="muted" style={{ fontSize: 13 }}>Progreso</div><div style={{ fontSize: 28, fontWeight: 700, color: 'var(--coral-deep)', fontFamily: 'Fraunces' }}>{progress}%</div></div>
         </div>
-        <div className="grid" style={{ gridTemplateColumns: 'repeat(5,1fr)' }}>
+        <div className="grid scroll-x-mobile" style={{ gridTemplateColumns: 'repeat(5,1fr)' }}>
           {journey.map((j) => (
             <div key={j.k} style={{ textAlign: 'center' }}>
               <div style={{ ...S.journeyIcon, background: j.done ? 'var(--salvia)' : j.active ? 'var(--coral)' : 'var(--niebla)', color: j.done || j.active ? '#fff' : 'var(--gris)' }}>

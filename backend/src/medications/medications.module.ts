@@ -281,7 +281,7 @@ export class MedicationsController {
 
 @ApiTags('medications-pro')
 @Controller('medications/pro')
-@Roles(RoleName.PSYCHOLOGIST, RoleName.PHYSICIAN, RoleName.EPS_ADMIN, RoleName.SUPERADMIN)
+@Roles(RoleName.PSYCHOLOGIST, RoleName.PHYSICIAN, RoleName.NURSE, RoleName.EPS_ADMIN, RoleName.SUPERADMIN)
 export class MedicationsProController {
   constructor(private readonly meds: MedicationsService) {}
 

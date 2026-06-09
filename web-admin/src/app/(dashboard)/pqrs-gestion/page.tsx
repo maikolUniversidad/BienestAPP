@@ -27,7 +27,7 @@ export default function PqrsGestion() {
     <>
       <div className="page-head"><h2>Gestión de PQRS</h2><p>Peticiones, quejas, reclamos y sugerencias de los usuarios.</p></div>
 
-      <div className="grid" style={{ gridTemplateColumns: sel ? '1fr 1fr' : '1fr', gap: 16 }}>
+      <div className="grid stack-mobile" style={{ gridTemplateColumns: sel ? '1fr 1fr' : '1fr', gap: 16 }}>
         <div className="table-card" style={{ alignSelf: 'start' }}>
           <table>
             <thead><tr><th>Tipo</th><th>Asunto</th><th>Usuario</th><th>Estado</th><th>Fecha</th></tr></thead>

@@ -8,6 +8,7 @@ const DEMO: [string, string][] = [
   ['afiliado@demo.co', 'Afiliado'],
   ['operador@demo.co', 'Call center'],
   ['psicologo@demo.co', 'Psicólogo'],
+  ['nutricionista@demo.co', 'Nutricionista'],
   ['admin@demo.co', 'Admin EPS'],
   ['auditor@demo.co', 'Auditor'],
 ];
@@ -33,9 +34,15 @@ export default function LoginPage() {
       }
       const res = await api.login(email.trim(), password);
       const roles = res.roles ?? [];
+      const has = (...rs: string[]) => rs.some((r) => roles.includes(r));
       const onlyAffiliate = roles.includes('AFFILIATE') && roles.length === 1;
-      const admin = ['EPS_ADMIN', 'SUPERADMIN', 'AUDITOR'].some((r) => roles.includes(r));
-      window.location.href = onlyAffiliate ? '/app' : admin ? '/overview' : '/callcenter';
+      let dest = '/callcenter';
+      if (onlyAffiliate) dest = '/app';
+      else if (has('EPS_ADMIN', 'SUPERADMIN', 'AUDITOR')) dest = '/overview';
+      else if (has('NUTRITIONIST')) dest = '/nutricion';
+      else if (has('PSYCHOLOGIST', 'PHYSICIAN', 'NURSE', 'SOCIAL_WORKER')) dest = '/clinico';
+      else if (has('CALLCENTER_OPERATOR')) dest = '/callcenter';
+      window.location.href = dest;
     } catch (err: any) {
       setError(mode === 'register' ? 'No se pudo crear la cuenta (¿correo ya registrado?)' : 'Credenciales inválidas');
     } finally {

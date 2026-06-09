@@ -62,7 +62,7 @@ export default function Medicacion() {
       </div>
 
       {/* Adherencia + resumen */}
-      <div className="grid" style={{ gridTemplateColumns: '220px 1fr', marginBottom: 18 }}>
+      <div className="grid stack-mobile" style={{ gridTemplateColumns: '220px 1fr', marginBottom: 18 }}>
         <div className="card" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <Ring pct={adh?.percent ?? 0} />
           <div><div className="muted" style={{ fontSize: 12 }}>Adherencia (7 días)</div><div style={{ fontFamily: 'Fraunces', fontSize: 18, color: 'var(--tinta)' }}>{adh?.taken ?? 0}/{adh?.expected ?? 0} dosis</div></div>

@@ -109,7 +109,7 @@ export class FoodController {
 
 @ApiTags('food-pro')
 @Controller('food/pro')
-@Roles(RoleName.PSYCHOLOGIST, RoleName.PHYSICIAN, RoleName.EPS_ADMIN, RoleName.SUPERADMIN)
+@Roles(RoleName.NUTRITIONIST, RoleName.PSYCHOLOGIST, RoleName.PHYSICIAN, RoleName.EPS_ADMIN, RoleName.SUPERADMIN)
 export class FoodProController {
   constructor(private readonly food: FoodService) {}
 

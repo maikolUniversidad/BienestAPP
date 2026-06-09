@@ -30,3 +30,6 @@ export const uploadJournalFile = (file: Blob, kind: 'image' | 'audio', ext: stri
 
 export const uploadChatFile = (file: Blob, kind: 'image' | 'audio', ext: string) =>
   uploadVia(api.aiUploadUrl, file, kind, ext);
+
+export const uploadAvatar = (file: Blob, ext: string) =>
+  uploadVia(api.profileAvatarUrl, file, 'image', ext);

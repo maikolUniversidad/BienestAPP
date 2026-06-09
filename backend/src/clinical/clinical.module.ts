@@ -119,7 +119,7 @@ export class ClinicalService {
 
 @ApiTags('clinical')
 @Controller('clinical')
-@Roles(RoleName.PSYCHOLOGIST, RoleName.PHYSICIAN, RoleName.EPS_ADMIN, RoleName.SUPERADMIN)
+@Roles(RoleName.PSYCHOLOGIST, RoleName.PHYSICIAN, RoleName.NUTRITIONIST, RoleName.NURSE, RoleName.SOCIAL_WORKER, RoleName.EPS_ADMIN, RoleName.SUPERADMIN)
 export class ClinicalController {
   constructor(private readonly clinical: ClinicalService) {}
 
