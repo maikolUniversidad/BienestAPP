@@ -9,6 +9,7 @@ import { Hilo, Ico } from '../../components/brand';
 const NAV = [
   { href: '/overview', label: 'Resumen', ic: 'dashboard', roles: ['EPS_ADMIN', 'SUPERADMIN', 'AUDITOR'] },
   { href: '/callcenter', label: 'Call Center', ic: 'call', roles: ['CALLCENTER_OPERATOR', 'PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
+  { href: '/medicamentos', label: 'Medicación', ic: 'med', roles: ['PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/alerts', label: 'Alertas de riesgo', ic: 'alerts', roles: ['EPS_ADMIN', 'PSYCHOLOGIST', 'PHYSICIAN', 'SUPERADMIN'] },
   { href: '/audit', label: 'Auditoría', ic: 'audit', roles: ['AUDITOR', 'SUPERADMIN'] },
 ];
@@ -16,6 +17,7 @@ const NAV = [
 const TITLES: Record<string, string> = {
   '/overview': 'Resumen general',
   '/callcenter': 'Call Center',
+  '/medicamentos': 'Medicación de pacientes',
   '/alerts': 'Alertas de riesgo',
   '/audit': 'Auditoría',
 };

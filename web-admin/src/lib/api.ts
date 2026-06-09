@@ -80,6 +80,13 @@ export const api = {
     request(`/callcenter/cases/${id}/call-log`, { method: 'POST', body: JSON.stringify({ durationSec, outcome }) }),
   metrics: () => request<any>('/admin/metrics'),
   alerts: () => request<any[]>('/admin/alerts'),
+  // Medicación (profesional)
+  medProPatients: () => request<any[]>('/medications/pro/patients'),
+  medProAlerts: () => request<any[]>('/medications/pro/alerts'),
+  medProPatient: (userId: string) => request<any>(`/medications/pro/patients/${userId}`),
+  medProAssign: (userId: string, m: { name: string; dose: string; route?: string; schedule: string[]; instructions?: string }) =>
+    request(`/medications/pro/patients/${userId}/items`, { method: 'POST', body: JSON.stringify(m) }),
+  medProRemove: (id: string) => request(`/medications/pro/items/${id}`, { method: 'DELETE' }),
   audit: (action?: string) =>
     request<any[]>(`/admin/audit${action ? `?action=${encodeURIComponent(action)}` : ''}`),
 
