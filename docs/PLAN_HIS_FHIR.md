@@ -29,7 +29,7 @@ Leyenda: ✅ hecho · 🟡 parcial/base · ⬜ pendiente.
   - ⬜ Diagnósticos CIE-10 con catálogo y diagnóstico principal/relacionados.
   - ⬜ Adjuntos clínicos por encuentro (reusa Storage + firma).
 - ⬜ **Consulta externa por especialidad** (plantillas por especialidad).
-- ⬜ **Consulta de urgencias** (triage Resolución 5596/2015, escalas).
+- 🟡 **Consulta de urgencias** (triage Resolución 5596/2015 con cola priorizada por nivel 1–5 — entregado; pendiente: escalas clínicas detalladas).
 - ⬜ **Atención domiciliaria** (hospitalización en casa) — agenda + seguimiento.
 - ⬜ **Cuidado crítico UCI** (registros de monitoreo, balance, escalas).
 - ⬜ **Ayudas diagnósticas**: laboratorio e imagenología (órdenes → resultados → FHIR DiagnosticReport/Observation).
@@ -41,7 +41,7 @@ Leyenda: ✅ hecho · 🟡 parcial/base · ⬜ pendiente.
 
 - 🟡 **Agenda médica y control de citas** (ya hay citas/telemedicina; falta agenda por profesional/consultorio, cupos, recordatorios masivos).
 - ⬜ **ChatBot de citas** (agendar/cancelar por el asistente IA + base de conocimiento).
-- ⬜ **Hospitalización** (camas, censo diario, traslados, alta).
+- 🟡 **Hospitalización** (camas con censo por servicio, admisión→encuentro, egreso→libera cama; UCI como servicio). Pendiente: traslados entre camas y censo histórico.
 - ✅ **Admisiones de pacientes** (base con `Encounter`; falta flujo de ingreso/egreso y autorizaciones).
 - ✅ **Administración de contratos con EPS/aseguradoras** (Fase 0).
 - 🟡 **Facturación electrónica de servicios de salud** (cuenta por encuentro con líneas valorizadas y estados; pendiente: emisión DIAN + CUFE + anexo técnico salud, tarifarios ISS/SOAT).

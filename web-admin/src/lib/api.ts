@@ -245,6 +245,16 @@ export const api = {
   repReingresos: (from?: string, to?: string) => request<any>(`/reportes/reingresos${from ? `?from=${from}&to=${to}` : ''}`),
   repOportunidad: (from?: string, to?: string) => request<any>(`/reportes/oportunidad${from ? `?from=${from}&to=${to}` : ''}`),
   repPyp: (from?: string, to?: string) => request<any>(`/reportes/pyp${from ? `?from=${from}&to=${to}` : ''}`),
+  // Hospitalización + triage
+  hospBeds: (ward?: string) => request<any[]>(`/hospitalizacion/beds${ward ? '?ward=' + ward : ''}`),
+  hospCreateBed: (body: any) => request<any>('/hospitalizacion/beds', { method: 'POST', body: JSON.stringify(body) }),
+  hospBedStatus: (id: string, status: string) => request<any>(`/hospitalizacion/beds/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  hospCenso: () => request<any>('/hospitalizacion/censo'),
+  hospAdmit: (body: any) => request<any>('/hospitalizacion/admit', { method: 'POST', body: JSON.stringify(body) }),
+  hospDischarge: (id: string) => request<any>(`/hospitalizacion/beds/${id}/discharge`, { method: 'POST' }),
+  hospTriage: (body: any) => request<any>('/hospitalizacion/triage', { method: 'POST', body: JSON.stringify(body) }),
+  hospTriageQueue: () => request<any[]>('/hospitalizacion/triage'),
+  hospTriageAttend: (id: string) => request<any>(`/hospitalizacion/triage/${id}/attend`, { method: 'PATCH' }),
 
   gestionFhir: (userId: string) => request<any>(`/gestion/fhir/patient/${userId}`),
   gestionHl7: async (userId: string) => {

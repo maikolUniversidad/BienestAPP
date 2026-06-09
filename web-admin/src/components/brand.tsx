@@ -45,6 +45,7 @@ const ICONS: Record<string, ReactNode> = {
   factura: <><path d="M6 2h9l4 4v14l-3-2-3 2-3-2-3 2V2z" /><path d="M9 7h6M9 11h6M9 15h4" /></>,
   inventario: <><path d="M3 7l9-4 9 4-9 4-9-4z" /><path d="M3 7v10l9 4 9-4V7" /><path d="M12 11v10" /></>,
   reportes: <><path d="M4 4v16h16" /><rect x="7" y="10" width="3" height="7" /><rect x="12" y="6" width="3" height="11" /><rect x="17" y="13" width="3" height="4" /></>,
+  cama: <><path d="M3 8v11M3 12h13a4 4 0 0 1 4 4v3M3 19h18" /><circle cx="8" cy="10" r="1.5" /></>,
 };
 export function Ico({ k, color, size = 20 }: { k: string; color?: string; size?: number }) {
   return (

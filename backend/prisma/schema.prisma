@@ -1057,6 +1057,36 @@ model Encounter {
   @@index([type, status])
 }
 
+/// Cama hospitalaria (hospitalización, UCI, urgencias) para el censo y la ocupación.
+model Bed {
+  id                 String   @id @default(cuid())
+  code               String   @unique
+  ward               String   @default("hospitalizacion") // hospitalizacion | uci | urgencias
+  status             String   @default("available") // available | occupied | cleaning | maintenance
+  currentUserId      String?
+  currentEncounterId String?
+  notes              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([ward, status])
+}
+
+/// Clasificación de triage de urgencias (Resolución 5596 de 2015): nivel 1 (más urgente) a 5.
+model Triage {
+  id             String   @id @default(cuid())
+  userId         String
+  encounterId    String?
+  level          Int // 1..5
+  reason         String?
+  vitals         Json?
+  professionalId String?
+  status         String   @default("waiting") // waiting | attended
+  createdAt      DateTime @default(now())
+
+  @@index([status, level])
+}
+
 /// Evolución clínica (nota SOAP) + signos vitales, dentro de un encuentro.
 model ClinicalEvolution {
   id          String   @id @default(cuid())
