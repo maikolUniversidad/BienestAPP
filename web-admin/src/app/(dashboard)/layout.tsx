@@ -12,7 +12,10 @@ const NAV = [
   { href: '/clinico', label: 'Clínico', ic: 'user', roles: ['PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/callcenter', label: 'Call Center', ic: 'call', roles: ['CALLCENTER_OPERATOR', 'PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/medicamentos', label: 'Medicación', ic: 'med', roles: ['PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
+  { href: '/nutricion', label: 'Nutrición', ic: 'food', roles: ['PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/alerts', label: 'Alertas de riesgo', ic: 'alerts', roles: ['EPS_ADMIN', 'PSYCHOLOGIST', 'PHYSICIAN', 'SUPERADMIN'] },
+  { href: '/usuarios', label: 'Usuarios', ic: 'users', roles: ['EPS_ADMIN', 'SUPERADMIN'] },
+  { href: '/pqrs-gestion', label: 'PQRS', ic: 'pqrs', roles: ['EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/audit', label: 'Auditoría', ic: 'audit', roles: ['AUDITOR', 'SUPERADMIN'] },
 ];
 
@@ -21,6 +24,9 @@ const TITLES: Record<string, string> = {
   '/clinico': 'Tablero clínico',
   '/callcenter': 'Call Center',
   '/medicamentos': 'Medicación de pacientes',
+  '/nutricion': 'Nutrición',
+  '/usuarios': 'Gestión de usuarios',
+  '/pqrs-gestion': 'Gestión de PQRS',
   '/alerts': 'Alertas de riesgo',
   '/audit': 'Auditoría',
 };

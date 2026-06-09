@@ -33,6 +33,7 @@ import { GoalsModule } from './goals/goals.module';
 import { EmergencyContactsModule } from './emergency-contacts/emergency-contacts.module';
 import { MedicationsModule } from './medications/medications.module';
 import { ClinicalModule } from './clinical/clinical.module';
+import { PqrsModule } from './pqrs/pqrs.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { ClinicalModule } from './clinical/clinical.module';
     EmergencyContactsModule,
     MedicationsModule,
     ClinicalModule,
+    PqrsModule,
   ],
   controllers: [AppController],
   providers: [

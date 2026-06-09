@@ -85,6 +85,20 @@ export const api = {
     request(`/callcenter/cases/${id}/call-log`, { method: 'POST', body: JSON.stringify({ durationSec, outcome }) }),
   metrics: () => request<any>('/admin/metrics'),
   alerts: () => request<any[]>('/admin/alerts'),
+  // Nutrición (profesional)
+  foodProSummary: () => request<any>('/food/pro/summary'),
+  // Gestión de usuarios (admin)
+  adminUsers: (q?: string) => request<any[]>(`/admin/users${q ? `?q=${encodeURIComponent(q)}` : ''}`),
+  adminCreateUser: (u: { email: string; firstName: string; lastName: string; role: string; password?: string }) =>
+    request<any>('/admin/users', { method: 'POST', body: JSON.stringify(u) }),
+  adminBulkUsers: (users: any[]) => request<any>('/admin/users/bulk', { method: 'POST', body: JSON.stringify({ users }) }),
+  // PQRS
+  createPqrs: (p: { type: string; subject: string; body: string }) =>
+    request('/pqrs', { method: 'POST', body: JSON.stringify(p) }),
+  myPqrs: () => request<any[]>('/pqrs/mine'),
+  adminPqrs: () => request<any[]>('/admin/pqrs'),
+  managePqrs: (id: string, patch: { status?: string; response?: string }) =>
+    request(`/admin/pqrs/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   // Medicación (profesional)
   medProPatients: () => request<any[]>('/medications/pro/patients'),
   medProAlerts: () => request<any[]>('/medications/pro/alerts'),
