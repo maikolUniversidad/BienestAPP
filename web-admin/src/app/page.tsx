@@ -8,8 +8,13 @@ const DEMO: [string, string][] = [
   ['afiliado@demo.co', 'Afiliado'],
   ['operador@demo.co', 'Call center'],
   ['psicologo@demo.co', 'Psicólogo'],
+  ['medico@demo.co', 'Médico'],
   ['nutricionista@demo.co', 'Nutricionista'],
+  ['enfermeria@demo.co', 'Enfermería'],
+  ['social@demo.co', 'Trabajo social'],
+  ['outdoor1@demo.co', 'Médico out-door'],
   ['admin@demo.co', 'Admin EPS'],
+  ['superadmin@demo.co', 'Superadmin'],
   ['auditor@demo.co', 'Auditor'],
 ];
 
