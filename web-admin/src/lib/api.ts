@@ -206,6 +206,13 @@ export const api = {
   gestionUpsertRecord: (userId: string, body: any) => request<any>(`/gestion/patients/${userId}/record`, { method: 'PUT', body: JSON.stringify(body) }),
   gestionEncounters: (userId: string) => request<any[]>(`/gestion/patients/${userId}/encounters`),
   gestionCreateEncounter: (userId: string, body: any) => request<any>(`/gestion/patients/${userId}/encounters`, { method: 'POST', body: JSON.stringify(body) }),
+  // HCE — detalle del encuentro
+  gestionEncounter: (id: string) => request<any>(`/gestion/encounters/${id}`),
+  gestionAddEvolution: (id: string, body: any) => request<any>(`/gestion/encounters/${id}/evolution`, { method: 'POST', body: JSON.stringify(body) }),
+  gestionAddDiagnosis: (id: string, body: any) => request<any>(`/gestion/encounters/${id}/diagnoses`, { method: 'POST', body: JSON.stringify(body) }),
+  gestionAddOrder: (id: string, body: any) => request<any>(`/gestion/encounters/${id}/orders`, { method: 'POST', body: JSON.stringify(body) }),
+  gestionUpdateOrder: (id: string, body: any) => request<any>(`/gestion/orders/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  gestionSetEncounterStatus: (id: string, status: string) => request<any>(`/gestion/encounters/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   gestionContracts: () => request<any[]>('/gestion/contracts'),
   gestionSaveContract: (id: string | null, body: any) => id ? request<any>(`/gestion/contracts/${id}`, { method: 'PUT', body: JSON.stringify(body) }) : request<any>('/gestion/contracts', { method: 'POST', body: JSON.stringify(body) }),
   gestionDeleteContract: (id: string) => request(`/gestion/contracts/${id}`, { method: 'DELETE' }),

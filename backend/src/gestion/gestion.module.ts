@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Injectable, Module, Param, Post, Put, Query, Header } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Injectable, Module, Param, Patch, Post, Put, Query, Header } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { RoleName } from '@prisma/client';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
@@ -19,8 +19,33 @@ class RecordDto {
   @IsOptional() @IsString() bloodType?: string;
   @IsOptional() @IsString() allergies?: string;
   @IsOptional() @IsString() chronicConditions?: string;
+  @IsOptional() @IsString() personalHistory?: string;
+  @IsOptional() @IsString() familyHistory?: string;
+  @IsOptional() @IsString() surgicalHistory?: string;
   @IsOptional() @IsString() emergencyNotes?: string;
 }
+class EvolutionDto {
+  @IsOptional() @IsString() subjective?: string;
+  @IsOptional() @IsString() objective?: string;
+  @IsOptional() @IsString() assessment?: string;
+  @IsOptional() @IsString() plan?: string;
+  @IsOptional() vitals?: Record<string, any>;
+}
+class DiagnosisDto {
+  @IsString() cie10: string;
+  @IsOptional() @IsString() description?: string;
+  @IsOptional() @IsString() kind?: string; // principal | relacionado
+}
+class OrderDto {
+  @IsString() type: string; // lab | imaging | medication | procedure | referral
+  @IsString() description: string;
+  @IsOptional() @IsString() code?: string;
+}
+class OrderUpdateDto {
+  @IsOptional() @IsString() status?: string;
+  @IsOptional() @IsString() result?: string;
+}
+class EncStatusDto { @IsString() status: string; }
 class ContractDto {
   @IsString() insurerName: string;
   @IsOptional() @IsString() epsCode?: string;
@@ -97,6 +122,56 @@ export class GestionService {
     return this.prisma.encounter.create({ data: { userId, professionalId: proId, type: dto.type, reason: dto.reason, cie10: dto.cie10, diagnosis: dto.diagnosis, status: dto.status || 'open' } });
   }
 
+  // ───────── HCE: detalle del encuentro (SOAP, dx, órdenes) ─────────
+  async encounterDetail(encounterId: string) {
+    const encounter = await this.prisma.encounter.findUnique({ where: { id: encounterId } });
+    if (!encounter) return null;
+    const [evolutions, diagnoses, orders] = await Promise.all([
+      this.prisma.clinicalEvolution.findMany({ where: { encounterId }, orderBy: { createdAt: 'desc' } }),
+      this.prisma.diagnosis.findMany({ where: { encounterId }, orderBy: { createdAt: 'asc' } }),
+      this.prisma.clinicalOrder.findMany({ where: { encounterId }, orderBy: { createdAt: 'desc' } }),
+    ]);
+    return { encounter, evolutions, diagnoses, orders };
+  }
+
+  private async userOfEncounter(encounterId: string): Promise<string> {
+    const e = await this.prisma.encounter.findUnique({ where: { id: encounterId }, select: { userId: true } });
+    if (!e) throw new Error('Encuentro no encontrado');
+    return e.userId;
+  }
+
+  async addEvolution(encounterId: string, authorId: string, dto: EvolutionDto) {
+    const userId = await this.userOfEncounter(encounterId);
+    const evo = await this.prisma.clinicalEvolution.create({
+      data: { encounterId, userId, authorId, subjective: dto.subjective, objective: dto.objective, assessment: dto.assessment, plan: dto.plan, vitals: (dto.vitals as object) ?? undefined },
+    });
+    await this.prisma.encounter.update({ where: { id: encounterId }, data: { status: 'in_progress' } }).catch(() => undefined);
+    // Persiste signos vitales numéricos también como métricas de salud (alimenta FHIR y tendencias).
+    const v = dto.vitals || {};
+    const map: [string, string][] = [['weight', 'kg'], ['hr', 'lpm'], ['spo2', '%'], ['temp', '°C']];
+    const rows = map.filter(([k]) => Number.isFinite(Number(v[k]))).map(([k, unit]) => ({ userId, type: k === 'hr' ? 'heart_rate' : k === 'temp' ? 'body_temperature' : k, value: Number(v[k]), unit, source: 'manual' }));
+    if (rows.length) await this.prisma.healthMetric.createMany({ data: rows }).catch(() => undefined);
+    return evo;
+  }
+
+  async addDiagnosis(encounterId: string, dto: DiagnosisDto) {
+    const userId = await this.userOfEncounter(encounterId);
+    const dx = await this.prisma.diagnosis.create({ data: { encounterId, userId, cie10: dto.cie10, description: dto.description, kind: dto.kind || 'relacionado' } });
+    if ((dto.kind || 'relacionado') === 'principal') await this.prisma.encounter.update({ where: { id: encounterId }, data: { cie10: dto.cie10, diagnosis: dto.description } }).catch(() => undefined);
+    return dx;
+  }
+
+  async addOrder(encounterId: string, createdBy: string, dto: OrderDto) {
+    const userId = await this.userOfEncounter(encounterId);
+    return this.prisma.clinicalOrder.create({ data: { encounterId, userId, type: dto.type, description: dto.description, code: dto.code, createdBy } });
+  }
+  updateOrder(id: string, dto: OrderUpdateDto) {
+    return this.prisma.clinicalOrder.update({ where: { id }, data: { status: dto.status, result: dto.result } });
+  }
+  setEncounterStatus(id: string, status: string) {
+    return this.prisma.encounter.update({ where: { id }, data: { status, endedAt: status === 'closed' ? new Date() : undefined } });
+  }
+
   // ───────── Interoperabilidad FHIR / HL7 ─────────
   private async gather(userId: string) {
     const [user, record] = await Promise.all([
@@ -104,7 +179,7 @@ export class GestionService {
       this.prisma.patientRecord.findUnique({ where: { userId } }),
     ]);
     if (!user) return null;
-    const [metrics, moods, risks, appts, encs, meds, docs] = await Promise.all([
+    const [metrics, moods, risks, appts, encs, meds, docs, diagnoses, orders, evolutions] = await Promise.all([
       this.prisma.healthMetric.findMany({ where: { userId }, orderBy: { recordedAt: 'desc' }, take: 50 }),
       this.prisma.moodEntry.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 20 }),
       this.prisma.riskAssessment.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 20 }),
@@ -112,8 +187,11 @@ export class GestionService {
       this.prisma.encounter.findMany({ where: { userId }, orderBy: { startedAt: 'desc' }, take: 30 }),
       this.prisma.medicationItem.findMany({ where: { userId }, take: 50 }),
       this.prisma.signedDocument.findMany({ where: { userId, status: 'signed' }, take: 50 }),
+      this.prisma.diagnosis.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 50 }),
+      this.prisma.clinicalOrder.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 50 }),
+      this.prisma.clinicalEvolution.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 30 }),
     ]);
-    return { user, record, metrics, moods, risks, appts, encs, meds, docs };
+    return { user, record, metrics, moods, risks, appts, encs, meds, docs, diagnoses, orders, evolutions };
   }
 
   async fhirBundle(userId: string) {
@@ -133,6 +211,9 @@ export class GestionService {
     d.appts.forEach((a) => entries.push(F.encounterResource(d.user.id, { id: `appt-${a.id}`, type: a.kind === 'medical' ? 'consulta_externa' : a.kind, status: a.status === 'completed' ? 'closed' : a.status, reason: a.reason ?? undefined, startedAt: a.scheduledAt, endedAt: a.endedAt ?? undefined })));
     d.encs.forEach((e) => entries.push(F.encounterResource(d.user.id, { id: `enc-${e.id}`, type: e.type, status: e.status, reason: e.reason ?? undefined, cie10: e.cie10 ?? undefined, startedAt: e.startedAt, endedAt: e.endedAt ?? undefined })));
     d.meds.forEach((m) => entries.push(F.medicationStatementResource(d.user.id, { id: m.id, name: m.name, dose: m.dose, schedule: m.schedule, active: m.active })));
+    d.diagnoses.forEach((dx) => entries.push(F.conditionResource(d.user.id, { id: `dx-${dx.id}`, text: dx.description || dx.cie10, cie10: dx.cie10, date: dx.createdAt })));
+    d.orders.forEach((o) => entries.push(F.serviceRequestResource(d.user.id, { id: o.id, type: o.type, description: o.description, code: o.code ?? undefined, status: o.status, date: o.createdAt })));
+    d.evolutions.forEach((e) => entries.push(F.clinicalImpressionResource(d.user.id, { id: e.id, encounterId: e.encounterId, assessment: e.assessment ?? undefined, plan: e.plan ?? undefined, date: e.createdAt })));
     d.docs.forEach((doc) => entries.push(F.documentReferenceResource(d.user.id, { id: doc.id, title: doc.title, status: doc.status, hash: doc.hash ?? undefined, signedAt: doc.signedAt ?? undefined })));
     const b = F.bundle(entries);
     b.timestamp = new Date().toISOString();
@@ -164,6 +245,20 @@ export class GestionController {
   encounters(@Param('userId') userId: string) { return this.svc.encounters(userId); }
   @Post('patients/:userId/encounters')
   createEncounter(@Param('userId') userId: string, @CurrentUser('id') proId: string, @Body() dto: EncounterDto) { return this.svc.createEncounter(userId, proId, dto); }
+
+  // HCE — detalle de encuentro
+  @Get('encounters/:id')
+  encounterDetail(@Param('id') id: string) { return this.svc.encounterDetail(id); }
+  @Post('encounters/:id/evolution')
+  addEvolution(@Param('id') id: string, @CurrentUser('id') authorId: string, @Body() dto: EvolutionDto) { return this.svc.addEvolution(id, authorId, dto); }
+  @Post('encounters/:id/diagnoses')
+  addDiagnosis(@Param('id') id: string, @Body() dto: DiagnosisDto) { return this.svc.addDiagnosis(id, dto); }
+  @Post('encounters/:id/orders')
+  addOrder(@Param('id') id: string, @CurrentUser('id') by: string, @Body() dto: OrderDto) { return this.svc.addOrder(id, by, dto); }
+  @Patch('encounters/:id/status')
+  setEncStatus(@Param('id') id: string, @Body() dto: EncStatusDto) { return this.svc.setEncounterStatus(id, dto.status); }
+  @Patch('orders/:id')
+  updateOrder(@Param('id') id: string, @Body() dto: OrderUpdateDto) { return this.svc.updateOrder(id, dto); }
 
   @Get('contracts')
   contracts() { return this.svc.contracts(); }

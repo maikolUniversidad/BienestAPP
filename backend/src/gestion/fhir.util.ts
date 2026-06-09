@@ -115,6 +115,35 @@ export function documentReferenceResource(patientId: string, d: { id: string; ti
   };
 }
 
+export function serviceRequestResource(patientId: string, o: { id: string; type: string; description: string; code?: string; status?: string; date?: any }) {
+  // medication → MedicationRequest; el resto → ServiceRequest.
+  if (o.type === 'medication') {
+    return {
+      resourceType: 'MedicationRequest', id: `order-${o.id}`,
+      status: o.status === 'done' ? 'completed' : o.status === 'cancelled' ? 'cancelled' : 'active',
+      intent: 'order', medicationCodeableConcept: o.code ? { coding: [{ system: 'urn:oid:2.16.170.1.105', code: o.code }], text: o.description } : { text: o.description },
+      subject: { reference: `Patient/${patientId}` }, authoredOn: iso(o.date),
+    };
+  }
+  const CAT: Record<string, string> = { lab: 'Laboratory procedure', imaging: 'Imaging', procedure: 'Procedure', referral: 'Referral' };
+  return {
+    resourceType: 'ServiceRequest', id: `order-${o.id}`,
+    status: o.status === 'done' ? 'completed' : o.status === 'cancelled' ? 'revoked' : o.status === 'in_progress' ? 'active' : 'draft',
+    intent: 'order',
+    category: [{ text: CAT[o.type] || o.type }],
+    code: o.code ? { coding: [{ system: 'urn:oid:2.16.170.1.103', code: o.code }], text: o.description } : { text: o.description },
+    subject: { reference: `Patient/${patientId}` }, authoredOn: iso(o.date),
+  };
+}
+
+export function clinicalImpressionResource(patientId: string, e: { id: string; encounterId: string; assessment?: string; plan?: string; date?: any }) {
+  return {
+    resourceType: 'ClinicalImpression', id: `evo-${e.id}`, status: 'completed',
+    subject: { reference: `Patient/${patientId}` }, encounter: { reference: `Encounter/enc-${e.encounterId}` },
+    date: iso(e.date), summary: [e.assessment, e.plan].filter(Boolean).join(' · ') || undefined,
+  };
+}
+
 export function bundle(entries: any[]) {
   return {
     resourceType: 'Bundle',

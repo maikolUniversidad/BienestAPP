@@ -1013,6 +1013,9 @@ model PatientRecord {
   bloodType         String?
   allergies         String?
   chronicConditions String?
+  personalHistory   String? // antecedentes personales
+  familyHistory     String? // antecedentes familiares
+  surgicalHistory   String? // antecedentes quirúrgicos
   emergencyNotes    String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -1052,4 +1055,52 @@ model Encounter {
 
   @@index([userId, startedAt])
   @@index([type, status])
+}
+
+/// Evolución clínica (nota SOAP) + signos vitales, dentro de un encuentro.
+model ClinicalEvolution {
+  id          String   @id @default(cuid())
+  encounterId String
+  userId      String
+  authorId    String?
+  subjective  String? // S
+  objective   String? // O
+  assessment  String? // A
+  plan        String? // P
+  vitals      Json? // {bp, hr, temp, rr, spo2, weight, height, bmi}
+  createdAt   DateTime @default(now())
+
+  @@index([encounterId])
+}
+
+/// Diagnóstico (CIE-10) de un encuentro. Permite principal + relacionados.
+model Diagnosis {
+  id          String   @id @default(cuid())
+  encounterId String
+  userId      String
+  cie10       String
+  description String?
+  kind        String   @default("relacionado") // principal | relacionado
+  createdAt   DateTime @default(now())
+
+  @@index([encounterId])
+  @@index([userId])
+}
+
+/// Orden médica: laboratorio, imágenes, medicamento, procedimiento o remisión.
+model ClinicalOrder {
+  id          String   @id @default(cuid())
+  encounterId String
+  userId      String
+  type        String // lab | imaging | medication | procedure | referral
+  description String
+  code        String? // CUPS / CUM
+  status      String   @default("requested") // requested | in_progress | done | cancelled
+  result      String?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([encounterId])
+  @@index([userId, type])
 }

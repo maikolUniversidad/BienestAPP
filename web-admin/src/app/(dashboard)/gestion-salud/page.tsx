@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
+import { EncounterHCE } from '../../../components/encounter-hce';
 
 function download(name: string, content: string, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));
@@ -22,6 +23,7 @@ export default function GestionSalud() {
   const [record, setRecord] = useState<any>({});
   const [encs, setEncs] = useState<any[]>([]);
   const [enc, setEnc] = useState({ type: 'consulta_externa', reason: '', cie10: '', diagnosis: '' });
+  const [openEnc, setOpenEnc] = useState<string | null>(null);
   const [fhir, setFhir] = useState<any>(null);
 
   // Contratos
@@ -37,6 +39,7 @@ export default function GestionSalud() {
     const d = await api.gestionPatient(p.userId).catch(() => null);
     setSel(d);
     setRecord(d?.record ?? {});
+    setOpenEnc(null);
     setEncs(await api.gestionEncounters(p.userId).catch(() => []));
   }
   async function saveRecord() {
@@ -120,6 +123,9 @@ export default function GestionSalud() {
                 </div>
                 <input className="field" value={record.allergies ?? ''} onChange={(e) => setRecord({ ...record, allergies: e.target.value })} placeholder="Alergias" />
                 <input className="field" value={record.chronicConditions ?? ''} onChange={(e) => setRecord({ ...record, chronicConditions: e.target.value })} placeholder="Condiciones crónicas (CIE-10 o texto)" />
+                <input className="field" value={record.personalHistory ?? ''} onChange={(e) => setRecord({ ...record, personalHistory: e.target.value })} placeholder="Antecedentes personales" />
+                <input className="field" value={record.familyHistory ?? ''} onChange={(e) => setRecord({ ...record, familyHistory: e.target.value })} placeholder="Antecedentes familiares" />
+                <input className="field" value={record.surgicalHistory ?? ''} onChange={(e) => setRecord({ ...record, surgicalHistory: e.target.value })} placeholder="Antecedentes quirúrgicos" />
                 <textarea className="field" style={{ minHeight: 60 }} value={record.emergencyNotes ?? ''} onChange={(e) => setRecord({ ...record, emergencyNotes: e.target.value })} placeholder="Notas para urgencias" />
                 <button className="btn btn-primary btn-sm" style={{ marginTop: 8 }} onClick={saveRecord}>Guardar ficha</button>
 
@@ -131,9 +137,14 @@ export default function GestionSalud() {
                   <button className="btn btn-primary btn-sm" onClick={addEncounter}>＋</button>
                 </div>
                 <div style={{ display: 'grid', gap: 4, marginTop: 8 }}>
-                  {encs.map((e) => <div key={e.id} style={{ fontSize: 13, borderBottom: '1px solid var(--line)', padding: '4px 0' }}>{e.type.replace('_', ' ')} · {e.cie10 || ''} {e.reason || ''} <span className="muted">{new Date(e.startedAt).toLocaleDateString('es-CO')} · {e.status}</span></div>)}
-                  {encs.length === 0 && <p className="muted" style={{ fontSize: 13 }}>Sin encuentros.</p>}
+                  {encs.map((e) => (
+                    <div key={e.id} onClick={() => setOpenEnc(openEnc === e.id ? null : e.id)} style={{ fontSize: 13, borderBottom: '1px solid var(--line)', padding: '6px 4px', cursor: 'pointer', borderRadius: 8, background: openEnc === e.id ? 'var(--durazno)' : undefined }}>
+                      {openEnc === e.id ? '▾ ' : '▸ '}{e.type.replace('_', ' ')} · {e.cie10 || ''} {e.reason || ''} <span className="muted">{new Date(e.startedAt).toLocaleDateString('es-CO')} · {e.status}</span>
+                    </div>
+                  ))}
+                  {encs.length === 0 && <p className="muted" style={{ fontSize: 13 }}>Sin encuentros. Crea uno arriba para abrir su HCE.</p>}
                 </div>
+                {openEnc && <EncounterHCE encounterId={openEnc} onChanged={async () => setEncs(await api.gestionEncounters(sel.user.id).catch(() => []))} />}
 
                 {fhir && (
                   <div style={{ marginTop: 14 }}>
