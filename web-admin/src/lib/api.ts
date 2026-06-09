@@ -239,6 +239,12 @@ export const api = {
   invDelete: (id: string) => request(`/inventario/items/${id}`, { method: 'DELETE' }),
   invMovement: (id: string, body: any) => request<any>(`/inventario/items/${id}/movement`, { method: 'POST', body: JSON.stringify(body) }),
   invAlerts: () => request<any>('/inventario/alerts'),
+  // Reportes regulatorios / producción
+  repOverview: () => request<any>('/reportes/overview'),
+  repProduccion: (from?: string, to?: string) => request<any>(`/reportes/produccion${from ? `?from=${from}&to=${to}` : ''}`),
+  repReingresos: (from?: string, to?: string) => request<any>(`/reportes/reingresos${from ? `?from=${from}&to=${to}` : ''}`),
+  repOportunidad: (from?: string, to?: string) => request<any>(`/reportes/oportunidad${from ? `?from=${from}&to=${to}` : ''}`),
+  repPyp: (from?: string, to?: string) => request<any>(`/reportes/pyp${from ? `?from=${from}&to=${to}` : ''}`),
 
   gestionFhir: (userId: string) => request<any>(`/gestion/fhir/patient/${userId}`),
   gestionHl7: async (userId: string) => {

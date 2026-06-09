@@ -53,7 +53,8 @@ Leyenda: ✅ hecho · 🟡 parcial/base · ⬜ pendiente.
 
 ## Fase 3 — Reportes asistenciales y regulatorios (Colombia)
 
-- ⬜ **Resolución 202/2021** (reporte de PYP / protección específica y detección temprana).
+- 🟡 **Resolución 202/2021** (resumen PYP: actividades, consultas preventivas y tamizajes — entregado; pendiente: archivo plano oficial por variables).
+- 🟡 **Producción por especialista** y 🟡 **reingresos** (<72h/<30d) y 🟡 **oportunidad de citas (Res. 1552)** — reportes entregados con exportación CSV.
 - ⬜ **Radicación de cuentas – Resolución 2284/2023** (proceso y soportes electrónicos).
 - ⬜ **Información al SISMED** (precios y reporte de medicamentos).
 - ⬜ **Resolución 256/2016** (SIC – indicadores de calidad).

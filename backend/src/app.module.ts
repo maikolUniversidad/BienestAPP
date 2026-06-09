@@ -44,6 +44,7 @@ import { ChatModule } from './chat/chat.module';
 import { GestionSaludModule } from './gestion/gestion.module';
 import { FacturacionModule } from './facturacion/facturacion.module';
 import { InventarioModule } from './inventario/inventario.module';
+import { ReportesModule } from './reportes/reportes.module';
 
 @Module({
   imports: [
@@ -85,6 +86,7 @@ import { InventarioModule } from './inventario/inventario.module';
     GestionSaludModule,
     FacturacionModule,
     InventarioModule,
+    ReportesModule,
   ],
   controllers: [AppController],
   providers: [
