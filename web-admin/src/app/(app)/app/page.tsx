@@ -20,11 +20,13 @@ export default function AffiliateHome() {
   const [d, setD] = useState<any>(null);
   const [content, setContent] = useState<any[]>([]);
   const [journal, setJournal] = useState<any[]>([]);
+  const [appts, setAppts] = useState<any[]>([]);
 
   async function load() {
     setD(await api.dashboard().catch(() => null));
     setContent(await api.content().catch(() => []));
     setJournal(await api.journalList().catch(() => []));
+    setAppts(await api.myAppointments().catch(() => []));
   }
   useEffect(() => { load(); }, []);
 
@@ -71,6 +73,27 @@ export default function AffiliateHome() {
           <div style={S.heroIcon}><Hilo size={64} sprout="#9FD8B0" /></div>
         </div>
       </section>
+
+      {/* PRÓXIMA CITA */}
+      {appts[0] && (() => {
+        const a = appts[0];
+        const when = new Date(a.scheduledAt);
+        const joinable = a.modality === 'video' && (a.status === 'active' || when.getTime() - Date.now() < 30 * 60 * 1000);
+        return (
+          <div className="card" style={{ marginBottom: 18, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', borderLeft: '4px solid var(--coral)' }}>
+            <div style={{ width: 50, height: 50, borderRadius: 14, background: 'var(--durazno)', display: 'grid', placeItems: 'center', fontSize: 22 }}>
+              {a.modality === 'video' ? '🎥' : a.modality === 'phone' ? '📞' : '🏥'}
+            </div>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <div style={{ fontWeight: 700, color: 'var(--tinta)' }}>Tienes una cita {a.modality === 'video' ? 'por videollamada' : 'programada'}</div>
+              <div className="muted" style={{ fontSize: 13 }}>{when.toLocaleString('es-CO', { dateStyle: 'full', timeStyle: 'short' })}{a.professionalName ? ` · ${a.professionalName}` : ''}</div>
+            </div>
+            {joinable
+              ? <Link className="btn btn-primary btn-sm" href={`/videollamada/${a.id}`}>Unirme ahora</Link>
+              : <Link className="btn btn-ghost btn-sm" href="/citas">Ver mis citas →</Link>}
+          </div>
+        );
+      })()}
 
       {/* TU MOMENTO ACTUAL */}
       <h2 style={S.h2}>Tu momento actual</h2>

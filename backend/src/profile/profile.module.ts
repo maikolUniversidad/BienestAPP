@@ -54,13 +54,14 @@ export class ProfileService {
     return p?.preferences ?? {};
   }
   async activity(userId: string) {
-    const [moods, journals, habits, posts] = await Promise.all([
+    const [moods, journals, habits, posts, appointments] = await Promise.all([
       this.prisma.moodEntry.count({ where: { userId } }),
       this.prisma.journalEntry.count({ where: { userId, deletedAt: null } }),
       this.prisma.habitLog.count({ where: { habit: { userId } } }),
       this.prisma.communityPost.count({ where: { userId } }),
+      this.prisma.appointment.count({ where: { affiliateId: userId, status: { in: ['scheduled', 'active'] } } }),
     ]);
-    return { moodEntries: moods, journalEntries: journals, habitCompletions: habits, communityPosts: posts };
+    return { moodEntries: moods, journalEntries: journals, habitCompletions: habits, communityPosts: posts, appointments };
   }
 }
 

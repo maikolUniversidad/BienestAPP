@@ -770,3 +770,92 @@ model KnowledgeChunk {
   @@index([scope, epsCode])
   @@index([sourceId])
 }
+
+// ─────────────────────────────────────────────────────────────
+// CRM del call center + telemedicina (mensajería, citas/videollamada, despacho)
+// ─────────────────────────────────────────────────────────────
+
+/// Plantilla de mensaje reutilizable (correo/WhatsApp/SMS). htmlBody admite HTML; las
+/// variables {{nombre}} se sustituyen al enviar y se previsualizan antes.
+model MessageTemplate {
+  id        String   @id @default(cuid())
+  channel   String // email | whatsapp | sms
+  name      String
+  subject   String? // asunto (correo)
+  htmlBody  String // cuerpo HTML (correo) o texto/markdown (whatsapp/sms)
+  variables String[] // nombres de variables disponibles, p.ej. ["nombre","fecha"]
+  scope     String   @default("global") // global | eps
+  epsCode   String?
+  active    Boolean  @default(true)
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Bitácora de cada mensaje saliente (auditable). status=simulated cuando no hay
+/// credenciales del proveedor configuradas (degradación segura).
+model OutboundMessage {
+  id           String   @id @default(cuid())
+  channel      String // email | whatsapp | sms
+  toAddress    String // correo o teléfono destino
+  targetUserId String?
+  caseId       String?
+  templateId   String?
+  subject      String?
+  body         String
+  status       String   @default("queued") // queued | sent | failed | simulated
+  provider     String?
+  error        String?
+  sentBy       String?
+  createdAt    DateTime @default(now())
+
+  @@index([caseId])
+  @@index([targetUserId])
+}
+
+/// Cita / sesión (videollamada, teléfono o presencial) entre afiliado y profesional.
+/// roomId alimenta la sala de video (Jitsi). Genera notificación al agendar.
+model Appointment {
+  id             String    @id @default(cuid())
+  affiliateId    String // userId del afiliado/paciente
+  professionalId String? // userId del profesional asignado
+  caseId         String? // enlace opcional a un caso del call center
+  kind           String    @default("medical") // medical | psychology | nutrition | callcenter | nursing | social
+  modality       String    @default("video") // video | phone | in_person
+  status         String    @default("scheduled") // scheduled | active | completed | cancelled | no_show
+  scheduledAt    DateTime
+  durationMin    Int       @default(30)
+  reason         String?
+  notes          String?
+  roomId         String    @unique
+  createdBy      String?
+  startedAt      DateTime?
+  endedAt        DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([affiliateId, scheduledAt])
+  @@index([professionalId, scheduledAt])
+  @@index([status, scheduledAt])
+}
+
+/// Despacho de ambulancia / visita domiciliaria / telemetría desde el call center.
+/// telemetry guarda una instantánea de las últimas métricas de salud del afiliado.
+model EmergencyDispatch {
+  id           String   @id @default(cuid())
+  userId       String
+  caseId       String?
+  type         String // ambulance | home_visit | telemetry
+  status       String   @default("requested") // requested | en_route | arrived | completed | cancelled
+  latitude     Float?
+  longitude    Float?
+  address      String?
+  telemetry    Json?
+  notes        String?
+  dispatchedBy String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([caseId])
+  @@index([userId, createdAt])
+}

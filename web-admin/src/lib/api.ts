@@ -256,4 +256,37 @@ export const api = {
   deleteKnowledgeSource: (id: string) => request(`/knowledge/sources/${id}`, { method: 'DELETE' }),
   knowledgeUploadUrl: (ext: string) =>
     request<{ path: string; token: string; signedUrl: string }>('/knowledge/upload-url', { method: 'POST', body: JSON.stringify({ ext }) }),
+
+  // ---- CRM: plantillas y mensajería ----
+  crmTemplates: (channel?: string) => request<any[]>(`/crm/templates${channel ? '?channel=' + channel : ''}`),
+  crmCreateTemplate: (body: any) => request<any>('/crm/templates', { method: 'POST', body: JSON.stringify(body) }),
+  crmUpdateTemplate: (id: string, body: any) => request<any>(`/crm/templates/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  crmDeleteTemplate: (id: string) => request(`/crm/templates/${id}`, { method: 'DELETE' }),
+  crmRender: (body: { body: string; subject?: string; variables?: Record<string, string> }) =>
+    request<{ subject: string; body: string }>('/crm/render', { method: 'POST', body: JSON.stringify(body) }),
+  crmMessages: (caseId?: string, targetUserId?: string) => {
+    const q = new URLSearchParams();
+    if (caseId) q.set('caseId', caseId);
+    if (targetUserId) q.set('targetUserId', targetUserId);
+    const s = q.toString();
+    return request<any[]>(`/crm/messages${s ? '?' + s : ''}`);
+  },
+  crmSend: (body: any) => request<any>('/crm/send', { method: 'POST', body: JSON.stringify(body) }),
+
+  // ---- Call center 360 + despacho ----
+  caseProfile360: (id: string) => request<any>(`/callcenter/cases/${id}/profile360`),
+  caseDispatch: (id: string, body: { type: string; address?: string; latitude?: number; longitude?: number; notes?: string }) =>
+    request<any>(`/callcenter/cases/${id}/dispatch`, { method: 'POST', body: JSON.stringify(body) }),
+  caseDispatches: (id: string) => request<any[]>(`/callcenter/cases/${id}/dispatches`),
+  setDispatchStatus: (id: string, status: string) =>
+    request(`/callcenter/dispatch/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+
+  // ---- Citas / telemedicina ----
+  createAppointment: (body: any) => request<any>('/appointments', { method: 'POST', body: JSON.stringify(body) }),
+  appointmentsStaff: (scope?: string) => request<any[]>(`/appointments${scope ? '?scope=' + scope : ''}`),
+  myAppointments: () => request<any[]>('/appointments/mine'),
+  getAppointment: (id: string) => request<any>(`/appointments/${id}`),
+  appointmentRoom: (id: string) => request<any>(`/appointments/${id}/room`),
+  setAppointmentStatus: (id: string, status: string) =>
+    request<any>(`/appointments/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
 };

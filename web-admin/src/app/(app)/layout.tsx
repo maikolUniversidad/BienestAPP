@@ -13,6 +13,7 @@ const NAV = [
   { href: '/asistente', label: 'Asistente IA', ic: 'ia', primary: true },
   { href: '/habitos', label: 'Hábitos', ic: 'habits', primary: true },
   { href: '/progreso', label: 'Progreso', ic: 'progreso', primary: true },
+  { href: '/citas', label: 'Mis citas', ic: 'cita', primary: false },
   { href: '/salud', label: 'Salud y wearables', ic: 'salud', primary: false },
   { href: '/medicacion', label: 'Medicación', ic: 'med', primary: false },
   { href: '/metas', label: 'Metas', ic: 'metas', primary: false },

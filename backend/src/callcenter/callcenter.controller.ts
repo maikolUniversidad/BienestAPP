@@ -27,6 +27,19 @@ class CallLogDto {
   @IsString()
   outcome?: string;
 }
+class DispatchDto {
+  @IsString()
+  type: string; // ambulance | home_visit | telemetry
+
+  @IsOptional() @IsString() address?: string;
+  @IsOptional() latitude?: number;
+  @IsOptional() longitude?: number;
+  @IsOptional() @IsString() notes?: string;
+}
+class DispatchStatusDto {
+  @IsString()
+  status: string;
+}
 
 @ApiTags('callcenter')
 @Controller('callcenter')
@@ -84,5 +97,25 @@ export class CallcenterController {
     @Body() dto: CallLogDto,
   ) {
     return this.callcenter.logCall(operatorId, id, dto.durationSec, dto.outcome);
+  }
+
+  // Vista 360° del afiliado para una mejor asistencia.
+  @Get('cases/:id/profile360')
+  profile360(@CurrentUser('id') operatorId: string, @Param('id') id: string) {
+    return this.callcenter.profile360(operatorId, id);
+  }
+
+  // Despacho de ambulancia / visita / telemetría.
+  @Post('cases/:id/dispatch')
+  dispatch(@CurrentUser('id') operatorId: string, @Param('id') id: string, @Body() dto: DispatchDto) {
+    return this.callcenter.dispatch(operatorId, id, dto);
+  }
+  @Get('cases/:id/dispatches')
+  dispatches(@Param('id') id: string) {
+    return this.callcenter.listDispatches(id);
+  }
+  @Patch('dispatch/:id/status')
+  dispatchStatus(@CurrentUser('id') operatorId: string, @Param('id') id: string, @Body() dto: DispatchStatusDto) {
+    return this.callcenter.setDispatchStatus(operatorId, id, dto.status);
   }
 }
