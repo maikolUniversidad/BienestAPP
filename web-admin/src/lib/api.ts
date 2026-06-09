@@ -230,4 +230,14 @@ export const api = {
   medAdherence: () => request<{ taken: number; expected: number; percent: number; activeItems: number }>('/medications/adherence'),
   sos: (type: string, note?: string) =>
     request<any>('/emergency/sos', { method: 'POST', body: JSON.stringify({ type, note }) }),
+  // Salud / wearables
+  healthSummary: () => request<any>('/health/summary'),
+  healthConnections: () => request<any[]>('/health/connections'),
+  healthConnect: (provider: string, deviceName?: string) =>
+    request('/health/connect', { method: 'POST', body: JSON.stringify({ provider, deviceName }) }),
+  healthDisconnect: (provider: string) =>
+    request('/health/disconnect', { method: 'POST', body: JSON.stringify({ provider }) }),
+  ingestHealth: (source: string, metrics: any[], deviceName?: string) =>
+    request('/health/metrics', { method: 'POST', body: JSON.stringify({ source, metrics, deviceName }) }),
+  healthInterpret: () => request<{ summary: any; interpretation: string }>('/health/interpret'),
 };

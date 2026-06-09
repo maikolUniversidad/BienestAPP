@@ -279,6 +279,31 @@ export class AiOrchestratorService {
     return this.validator.validate(raw).content;
   }
 
+  /**
+   * Interpretación responsable (NO diagnóstica) de datos de wearables/salud.
+   * Da una lectura general y un par de hábitos sugeridos. Pasa por validación.
+   */
+  async interpretHealth(dataSummary: string): Promise<string> {
+    let raw = '';
+    try {
+      raw = await this.llm.chat([
+        {
+          role: 'system',
+          content:
+            'Eres un acompañante de bienestar. Interpreta de forma BREVE (3–4 frases), clara y ' +
+            'responsable los datos de actividad/sueño/ritmo cardíaco de un wearable. NO diagnostiques ' +
+            'ni alarmes; no es una evaluación médica. Destaca lo positivo, señala con tacto algo a ' +
+            'cuidar y sugiere 1–2 hábitos. Si ves valores muy fuera de rango, recomienda consultar a ' +
+            'un profesional. Español cercano.',
+        },
+        { role: 'user', content: dataSummary },
+      ]);
+    } catch {
+      return 'Aún estoy reuniendo tus datos. Sigue registrando tu actividad y sueño para darte una lectura útil. 🌿';
+    }
+    return this.validator.validate(raw).content;
+  }
+
   /** Resumen empático de los textos de diario de la semana. */
   async summarizeWeek(text: string) {
     if (!text.trim()) return '';

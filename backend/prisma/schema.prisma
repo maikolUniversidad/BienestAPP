@@ -183,6 +183,8 @@ model User {
   medicationItems  MedicationItem[]
   pqrs             Pqrs[]
   communityPosts   CommunityPost[]
+  healthMetrics    HealthMetric[]
+  healthConnections HealthConnection[]
   pet              VirtualPet?
   achievements     UserAchievementCard[]
   testResults      TestResult[]
@@ -604,6 +606,33 @@ model Notification {
   createdAt DateTime         @default(now())
 
   @@index([userId, read])
+}
+
+model HealthMetric {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       String // heart_rate | steps | sleep | calories | distance | active_minutes | hrv | spo2 | weight
+  value      Float
+  unit       String
+  source     String // apple_health | google_fit | health_connect | wearable_ble | manual
+  recordedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@index([userId, type, recordedAt])
+}
+
+model HealthConnection {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider   String // apple_health | google_fit | health_connect | wearable_ble
+  status     String   @default("connected") // connected | disconnected
+  deviceName String?
+  lastSync   DateTime?
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, provider])
 }
 
 model CommunityContent {
