@@ -26,6 +26,7 @@ enum RoleName {
   NUTRITIONIST
   NURSE
   SOCIAL_WORKER
+  FIELD_DOCTOR
   EPS_ADMIN
   SUPERADMIN
   AUDITOR
@@ -1070,6 +1071,35 @@ model Bed {
   updatedAt          DateTime @updatedAt
 
   @@index([ward, status])
+}
+
+/// Médico out-door / de campo: ubicación, turno y estado para atención domiciliaria geolocalizada.
+model FieldAgent {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  zone           String? // zona de la ciudad
+  lat            Float
+  lng            Float
+  status         String   @default("offline") // available | en_route | attending | offline
+  specialty      String?
+  shiftStart     String? // "07:00"
+  shiftEnd       String? // "19:00"
+  phone          String?
+  activeServices Int      @default(0)
+  lastUpdate     DateTime @default(now())
+  createdAt      DateTime @default(now())
+}
+
+/// Matriz de acceso a módulos por rol (parametrizable por el administrador).
+model RoleModuleAccess {
+  id        String   @id @default(cuid())
+  roleName  String
+  moduleKey String // "facturacion" o submódulo "facturacion.rips"
+  enabled   Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+
+  @@unique([roleName, moduleKey])
+  @@index([roleName])
 }
 
 /// Visita de atención domiciliaria (hospitalización en casa).

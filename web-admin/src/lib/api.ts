@@ -264,6 +264,17 @@ export const api = {
   homeSchedule: (body: any) => request<any>('/asistencial/domiciliaria', { method: 'POST', body: JSON.stringify(body) }),
   homeVisits: (status?: string) => request<any[]>(`/asistencial/domiciliaria${status ? '?status=' + status : ''}`),
   homeRegister: (id: string, body: any) => request<any>(`/asistencial/domiciliaria/${id}/register`, { method: 'PATCH', body: JSON.stringify(body) }),
+  // Médicos out-door / mapa de salud
+  campoAgents: () => request<any[]>('/campo/agents'),
+  campoAgentHistory: (userId: string) => request<any>(`/campo/agents/${userId}/history`),
+  campoMe: () => request<any>('/campo/me'),
+  campoSetStatus: (body: { status: string; lat?: number; lng?: number }) => request<any>('/campo/me/status', { method: 'PATCH', body: JSON.stringify(body) }),
+  campoAttend: (visitId: string, notes?: string) => request<any>('/campo/attend', { method: 'POST', body: JSON.stringify({ visitId, notes }) }),
+  // RBAC (módulos por rol)
+  rbacCatalog: () => request<{ modules: any[]; roles: any[] }>('/rbac/catalog'),
+  rbacMatrix: () => request<Record<string, string[]>>('/rbac/matrix'),
+  rbacToggle: (roleName: string, moduleKey: string, enabled: boolean) => request('/rbac', { method: 'PATCH', body: JSON.stringify({ roleName, moduleKey, enabled }) }),
+  rbacMyDisabled: () => request<{ disabled: string[] }>('/rbac/my-disabled'),
 
   gestionFhir: (userId: string) => request<any>(`/gestion/fhir/patient/${userId}`),
   gestionHl7: async (userId: string) => {

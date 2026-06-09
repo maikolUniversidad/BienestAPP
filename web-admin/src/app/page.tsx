@@ -43,6 +43,7 @@ export default function LoginPage() {
       let dest = '/callcenter';
       if (onlyAffiliate) dest = '/app';
       else if (has('EPS_ADMIN', 'SUPERADMIN', 'AUDITOR')) dest = '/overview';
+      else if (has('FIELD_DOCTOR')) dest = '/campo';
       else if (has('NUTRITIONIST')) dest = '/nutricion';
       else if (has('PSYCHOLOGIST', 'PHYSICIAN', 'NURSE', 'SOCIAL_WORKER')) dest = '/clinico';
       else if (has('CALLCENTER_OPERATOR')) dest = '/callcenter';

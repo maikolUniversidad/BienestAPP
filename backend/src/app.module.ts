@@ -47,6 +47,8 @@ import { InventarioModule } from './inventario/inventario.module';
 import { ReportesModule } from './reportes/reportes.module';
 import { HospitalizacionModule } from './hospitalizacion/hospitalizacion.module';
 import { AsistencialModule } from './asistencial/asistencial.module';
+import { CampoModule } from './campo/campo.module';
+import { RbacModule } from './rbac/rbac.module';
 
 @Module({
   imports: [
@@ -91,6 +93,8 @@ import { AsistencialModule } from './asistencial/asistencial.module';
     ReportesModule,
     HospitalizacionModule,
     AsistencialModule,
+    CampoModule,
+    RbacModule,
   ],
   controllers: [AppController],
   providers: [
