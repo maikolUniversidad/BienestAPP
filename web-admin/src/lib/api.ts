@@ -198,6 +198,22 @@ export const api = {
   chatRead: (threadId: string) => request(`/chat/threads/${threadId}/read`, { method: 'POST' }),
   chatUploadUrl: (kind: 'image' | 'audio' | 'document', ext: string) =>
     request<{ path: string; token: string }>('/chat/upload-url', { method: 'POST', body: JSON.stringify({ kind, ext }) }),
+  chatHeartbeat: () => request('/chat/heartbeat', { method: 'POST' }),
+
+  // ---- Gestión Salud (HIS) + FHIR/HL7 ----
+  gestionPatients: (q?: string) => request<any[]>(`/gestion/patients${q ? '?q=' + encodeURIComponent(q) : ''}`),
+  gestionPatient: (userId: string) => request<any>(`/gestion/patients/${userId}`),
+  gestionUpsertRecord: (userId: string, body: any) => request<any>(`/gestion/patients/${userId}/record`, { method: 'PUT', body: JSON.stringify(body) }),
+  gestionEncounters: (userId: string) => request<any[]>(`/gestion/patients/${userId}/encounters`),
+  gestionCreateEncounter: (userId: string, body: any) => request<any>(`/gestion/patients/${userId}/encounters`, { method: 'POST', body: JSON.stringify(body) }),
+  gestionContracts: () => request<any[]>('/gestion/contracts'),
+  gestionSaveContract: (id: string | null, body: any) => id ? request<any>(`/gestion/contracts/${id}`, { method: 'PUT', body: JSON.stringify(body) }) : request<any>('/gestion/contracts', { method: 'POST', body: JSON.stringify(body) }),
+  gestionDeleteContract: (id: string) => request(`/gestion/contracts/${id}`, { method: 'DELETE' }),
+  gestionFhir: (userId: string) => request<any>(`/gestion/fhir/patient/${userId}`),
+  gestionHl7: async (userId: string) => {
+    const res = await fetch(`${API_URL}/gestion/fhir/patient/${userId}/hl7`, { headers: token() ? { Authorization: `Bearer ${token()}` } : {} });
+    return res.text();
+  },
 
   // ---- Gestión documental / firma digital ----
   docsMine: () => request<{ signed: any[]; pending: any[]; pendingAttendance: any[] }>('/documents/mine'),

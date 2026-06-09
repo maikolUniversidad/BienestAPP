@@ -32,6 +32,12 @@ export class ChatService {
 
   uploadUrl(userId: string, kind: any, ext: string) { return this.storage.signUpload(userId, kind, ext); }
 
+  /** Marca al usuario como en línea (presencia del chat). */
+  async heartbeat(userId: string) {
+    await this.prisma.user.update({ where: { id: userId }, data: { chatLastSeenAt: new Date() } }).catch(() => undefined);
+    return { ok: true };
+  }
+
   private isStaff(user: AuthUser) { return user.roles.some((r) => r !== 'AFFILIATE'); }
 
   /** Tarjetas {id,name,role} para una lista de userIds. */
@@ -40,11 +46,13 @@ export class ChatService {
     if (!uniq.length) return [] as any[];
     const users = await this.prisma.user.findMany({
       where: { id: { in: uniq } },
-      select: { id: true, email: true, profile: { select: { firstName: true, lastName: true } }, roles: { select: { role: { select: { name: true } } } } },
+      select: { id: true, email: true, chatLastSeenAt: true, profile: { select: { firstName: true, lastName: true } }, roles: { select: { role: { select: { name: true } } } } },
     });
+    const now = Date.now();
     return users.map((u) => {
       const role = u.roles[0]?.role.name ?? 'AFFILIATE';
-      return { id: u.id, name: u.profile ? `${u.profile.firstName} ${u.profile.lastName}` : u.email, role, roleLabel: ROLE_LABEL[role] ?? role };
+      const online = u.chatLastSeenAt ? now - new Date(u.chatLastSeenAt).getTime() < 90_000 : false;
+      return { id: u.id, name: u.profile ? `${u.profile.firstName} ${u.profile.lastName}` : u.email, role, roleLabel: ROLE_LABEL[role] ?? role, online, lastSeenAt: u.chatLastSeenAt };
     });
   }
 
@@ -218,6 +226,8 @@ export class ChatController {
   threads(@CurrentUser() user: AuthUser) { return this.chat.threads(user); }
   @Get('unread')
   unread(@CurrentUser() user: AuthUser) { return this.chat.unread(user); }
+  @Post('heartbeat')
+  heartbeat(@CurrentUser('id') userId: string) { return this.chat.heartbeat(userId); }
   @Post('direct')
   direct(@CurrentUser() user: AuthUser, @Body() dto: DirectDto) { return this.chat.openDirect(user, dto.targetId); }
   @Post('group')

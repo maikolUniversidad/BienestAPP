@@ -41,6 +41,7 @@ import { CrmModule } from './crm/crm.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { DocumentsModule } from './documents/documents.module';
 import { ChatModule } from './chat/chat.module';
+import { GestionSaludModule } from './gestion/gestion.module';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { ChatModule } from './chat/chat.module';
     AppointmentsModule,
     DocumentsModule,
     ChatModule,
+    GestionSaludModule,
   ],
   controllers: [AppController],
   providers: [

@@ -31,7 +31,11 @@ export function ChatModule() {
   const streamRef = useRef<MediaStream | null>(null);
 
   async function loadThreads() { setThreads(await api.chatThreads().catch(() => [])); }
-  useEffect(() => { loadThreads(); const t = setInterval(loadThreads, 15000); return () => clearInterval(t); }, []);
+  useEffect(() => {
+    loadThreads(); api.chatHeartbeat().catch(() => undefined);
+    const t = setInterval(() => { loadThreads(); api.chatHeartbeat().catch(() => undefined); }, 15000);
+    return () => clearInterval(t);
+  }, []);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
 
   // Polling de la conversación activa.
@@ -162,7 +166,13 @@ export function ChatModule() {
             <div className="chat-conv-head">
               <button className="btn btn-ghost btn-sm hide-desktop" onClick={() => { setActive(null); activeRef.current = null; }}>←</button>
               <div style={{ width: 38, height: 38, borderRadius: 999, background: 'var(--durazno)', display: 'grid', placeItems: 'center', fontWeight: 700, color: 'var(--coral-deep)' }}>{(active.title || '?').slice(0, 1).toUpperCase()}</div>
-              <div><div style={{ fontWeight: 700, color: 'var(--tinta)' }}>{active.title}</div><div className="muted" style={{ fontSize: 12 }}>{active.others?.map((o: any) => o.roleLabel).filter(Boolean).join(', ')}</div></div>
+              <div>
+                <div style={{ fontWeight: 700, color: 'var(--tinta)' }}>{active.title}</div>
+                <div className="muted" style={{ fontSize: 12 }}>
+                  {active.others?.some((o: any) => o.online) && <span style={{ color: 'var(--salvia-deep)', fontWeight: 700 }}>● en línea · </span>}
+                  {active.others?.map((o: any) => o.roleLabel).filter(Boolean).join(', ')}
+                </div>
+              </div>
             </div>
 
             <div className="chat-conv-msgs">

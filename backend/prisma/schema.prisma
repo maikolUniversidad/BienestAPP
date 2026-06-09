@@ -165,6 +165,7 @@ model User {
   mfaEnabled     Boolean    @default(false)
   mfaSecret      String? // SENSITIVE
   epsCode        String? // EPS prestadora a la que pertenece el afiliado (ver model Eps)
+  chatLastSeenAt DateTime? // presencia en el chat (en línea / última vez)
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
@@ -995,4 +996,60 @@ model ChatMessage {
   createdAt   DateTime   @default(now())
 
   @@index([threadId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Gestión Salud (HIS) — registro clínico de pacientes, contratos EPS, encuentros
+// Fundación para HCE, facturación, RIPS e interoperabilidad FHIR/HL7.
+// ─────────────────────────────────────────────────────────────
+
+/// Ficha clínica/administrativa del paciente (complementa User + AffiliateProfile).
+model PatientRecord {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  mrn               String?  @unique // número de historia clínica interno
+  regimen           String? // contributivo | subsidiado
+  eapb              String? // EPS/EAPB
+  bloodType         String?
+  allergies         String?
+  chronicConditions String?
+  emergencyNotes    String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+/// Contrato con EPS o aseguradora.
+model EpsContract {
+  id             String    @id @default(cuid())
+  insurerName    String
+  epsCode        String?
+  contractNumber String?
+  modality       String? // capitacion | evento | pgp | subsidiado
+  startDate      DateTime?
+  endDate        DateTime?
+  ceilingValue   Float?
+  status         String    @default("active") // active | suspended | ended
+  notes          String?
+  createdBy      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+/// Encuentro asistencial (admisión / atención): consulta, urgencias, hospitalización, UCI, etc.
+model Encounter {
+  id             String    @id @default(cuid())
+  userId         String
+  appointmentId  String?
+  type           String    @default("consulta_externa") // consulta_externa | urgencias | hospitalizacion | uci | domiciliaria | pyp | laboratorio | imagenologia | cirugia
+  status         String    @default("open") // open | in_progress | closed
+  reason         String?
+  cie10          String? // diagnóstico principal
+  diagnosis      String?
+  professionalId String?
+  startedAt      DateTime  @default(now())
+  endedAt        DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([userId, startedAt])
+  @@index([type, status])
 }
