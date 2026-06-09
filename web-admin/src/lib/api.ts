@@ -269,7 +269,8 @@ export const api = {
   campoAgentHistory: (userId: string) => request<any>(`/campo/agents/${userId}/history`),
   campoMe: () => request<any>('/campo/me'),
   campoSetStatus: (body: { status: string; lat?: number; lng?: number }) => request<any>('/campo/me/status', { method: 'PATCH', body: JSON.stringify(body) }),
-  campoAttend: (visitId: string, notes?: string) => request<any>('/campo/attend', { method: 'POST', body: JSON.stringify({ visitId, notes }) }),
+  campoAttend: (body: { visitId: string; notes?: string; diagnosis?: string; cie10?: string; vitals?: Record<string, any> }) => request<any>('/campo/attend', { method: 'POST', body: JSON.stringify(body) }),
+  campoEscalate: (visitId: string, type: string, note?: string) => request<any>('/campo/escalate', { method: 'POST', body: JSON.stringify({ visitId, type, note }) }),
   // RBAC (módulos por rol)
   rbacCatalog: () => request<{ modules: any[]; roles: any[] }>('/rbac/catalog'),
   rbacMatrix: () => request<Record<string, string[]>>('/rbac/matrix'),
