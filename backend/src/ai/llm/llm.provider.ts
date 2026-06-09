@@ -166,6 +166,51 @@ export class LlmProvider {
     }
   }
 
+  /**
+   * Compara dos fotos (perfil vs foto en vivo) para verificar identidad. Modelo de visión.
+   * Si no hay visión disponible, devuelve match=null (requiere revisión manual).
+   */
+  async verifyIdentity(profileUrl: string, liveUrl: string): Promise<{ match: boolean | null; confidence: number | null; reason?: string }> {
+    if (this.provider === 'mock' || !this.apiKey) return { match: null, confidence: null, reason: 'sin_vision' };
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.CHAT_TIMEOUT_MS);
+    try {
+      const sys =
+        'Eres un verificador de identidad. Te doy dos fotos: la primera es la foto de perfil registrada, ' +
+        'la segunda es una foto tomada en el momento. Indica si parecen ser la MISMA persona. ' +
+        'Responde EXCLUSIVAMENTE con JSON: {"match":boolean,"confidence":number,"reason":string}. confidence 0..1.';
+      const res = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.apiKey}` },
+        body: JSON.stringify({
+          model: this.visionModel,
+          messages: [
+            { role: 'system', content: sys },
+            { role: 'user', content: [
+              { type: 'text', text: 'Foto de perfil:' }, { type: 'image_url', image_url: { url: profileUrl } },
+              { type: 'text', text: 'Foto en el momento:' }, { type: 'image_url', image_url: { url: liveUrl } },
+            ] },
+          ],
+          temperature: 0, max_tokens: 120, stream: false, response_format: { type: 'json_object' },
+        }),
+        signal: controller.signal,
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+      const j = JSON.parse(data.choices?.[0]?.message?.content ?? '{}');
+      return {
+        match: typeof j.match === 'boolean' ? j.match : null,
+        confidence: typeof j.confidence === 'number' ? Math.max(0, Math.min(1, j.confidence)) : null,
+        reason: typeof j.reason === 'string' ? j.reason.slice(0, 200) : undefined,
+      };
+    } catch (e) {
+      this.logger.warn(`Verificación de identidad no disponible (${(e as Error).message}).`);
+      return { match: null, confidence: null, reason: 'error_vision' };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   /** Estimación de respaldo por tipo de comida cuando no hay visión disponible. */
   private heuristicNutrition(mealType?: string) {
     const KCAL: Record<string, number> = { desayuno: 420, merienda: 200, almuerzo: 650, onces: 230, cena: 500, espontanea: 300 };

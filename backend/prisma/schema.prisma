@@ -186,6 +186,7 @@ model User {
   communityPosts   CommunityPost[]
   healthMetrics    HealthMetric[]
   healthConnections HealthConnection[]
+  signedDocuments  SignedDocument[]
   pet              VirtualPet?
   achievements     UserAchievementCard[]
   testResults      TestResult[]
@@ -894,4 +895,62 @@ model EmergencyDispatch {
 
   @@index([caseId])
   @@index([userId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Gestión documental + firma digital (con hash de evidencia)
+// ─────────────────────────────────────────────────────────────
+
+/// IPS prestadora (logo y datos para encabezar los documentos firmables).
+model Ips {
+  id        String   @id @default(cuid())
+  name      String
+  nit       String?
+  epsCode   String?
+  logoPath  String? // ruta del logo en Supabase Storage
+  address   String?
+  phone     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Tipo/plantilla de documento firmable, gestionado por el administrador.
+model DocumentTemplate {
+  id            String   @id @default(cuid())
+  name          String
+  kind          String   @default("generic") // consent | attendance | authorization | generic
+  description   String?
+  htmlBody      String // contenido con {{variables}} (nombre, fecha, ips, etc.)
+  ipsId         String?
+  requiresPhoto Boolean  @default(false) // exige foto para verificar identidad al firmar
+  scope         String   @default("global") // global | eps
+  epsCode       String?
+  active        Boolean  @default(true)
+  createdBy     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+/// Instancia firmada (o pendiente) de un documento. Guarda hash + evidencia del dispositivo.
+model SignedDocument {
+  id                 String    @id @default(cuid())
+  templateId         String?
+  userId             String
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointmentId      String? // si es firma de asistencia a una cita
+  ipsId              String?
+  title              String
+  contentSnapshot    String // HTML renderizado en el momento de firmar
+  status             String    @default("pending") // pending | signed | void
+  hash               String? // SHA-256 de la evidencia canónica
+  evidence           Json? // {device, userAgent, platform, screen, timezone, lat?, lng?, signedAtIso, photoHash?}
+  photoPath          String? // foto de la persona al firmar (verificación de identidad)
+  identityMatch      Boolean?
+  identityConfidence Float?
+  signedAt           DateTime?
+  createdAt          DateTime  @default(now())
+
+  @@index([userId, status])
+  @@index([appointmentId])
 }

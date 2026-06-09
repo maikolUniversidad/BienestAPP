@@ -39,6 +39,7 @@ import { HealthModule } from './health/health.module';
 import { KnowledgeModule } from './knowledge/knowledge.module';
 import { CrmModule } from './crm/crm.module';
 import { AppointmentsModule } from './appointments/appointments.module';
+import { DocumentsModule } from './documents/documents.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { AppointmentsModule } from './appointments/appointments.module';
     KnowledgeModule,
     CrmModule,
     AppointmentsModule,
+    DocumentsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -21,12 +21,14 @@ export default function AffiliateHome() {
   const [content, setContent] = useState<any[]>([]);
   const [journal, setJournal] = useState<any[]>([]);
   const [appts, setAppts] = useState<any[]>([]);
+  const [pendingDocs, setPendingDocs] = useState(0);
 
   async function load() {
     setD(await api.dashboard().catch(() => null));
     setContent(await api.content().catch(() => []));
     setJournal(await api.journalList().catch(() => []));
     setAppts(await api.myAppointments().catch(() => []));
+    setPendingDocs((await api.docsPendingCount().catch(() => ({ count: 0 }))).count);
   }
   useEffect(() => { load(); }, []);
 
@@ -73,6 +75,18 @@ export default function AffiliateHome() {
           <div style={S.heroIcon}><Hilo size={64} sprout="#9FD8B0" /></div>
         </div>
       </section>
+
+      {/* DOCUMENTOS PENDIENTES */}
+      {pendingDocs > 0 && (
+        <div className="card" style={{ marginBottom: 18, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', borderLeft: '4px solid var(--ambar)' }}>
+          <div style={{ width: 50, height: 50, borderRadius: 14, background: 'var(--durazno)', display: 'grid', placeItems: 'center', fontSize: 22 }}>✍️</div>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <div style={{ fontWeight: 700, color: 'var(--tinta)' }}>Tienes {pendingDocs} documento(s) por firmar</div>
+            <div className="muted" style={{ fontSize: 13 }}>Firma tus constancias y consentimientos pendientes.</div>
+          </div>
+          <Link className="btn btn-primary btn-sm" href="/documentos">Firmar ahora</Link>
+        </div>
+      )}
 
       {/* PRÓXIMA CITA */}
       {appts[0] && (() => {

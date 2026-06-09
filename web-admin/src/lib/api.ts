@@ -186,6 +186,30 @@ export const api = {
   createNotifCategory: (body: any) => request<any>('/notifications/admin/categories', { method: 'POST', body: JSON.stringify(body) }),
   updateNotifCategory: (key: string, body: any) => request<any>(`/notifications/admin/categories/${key}`, { method: 'PUT', body: JSON.stringify(body) }),
   broadcastNotif: (body: any) => request<{ sent: number }>('/notifications/admin/broadcast', { method: 'POST', body: JSON.stringify(body) }),
+
+  // ---- Gestión documental / firma digital ----
+  docsMine: () => request<{ signed: any[]; pending: any[]; pendingAttendance: any[] }>('/documents/mine'),
+  docsPendingCount: () => request<{ count: number }>('/documents/pending-count'),
+  docsUploadUrl: (_kind: 'image' | 'audio', ext: string) =>
+    request<{ path: string; token: string }>('/documents/upload-url', { method: 'POST', body: JSON.stringify({ ext }) }),
+  signDocument: (body: { signedDocumentId?: string; templateId?: string; appointmentId?: string; photoPath?: string; evidence: Record<string, unknown> }) =>
+    request<any>('/documents/sign', { method: 'POST', body: JSON.stringify(body) }),
+  getSignedDoc: (id: string) => request<any>(`/documents/${id}`),
+  // Admin documental
+  docIpsList: () => request<any[]>('/documents/admin/ips'),
+  docIpsSave: (id: string | null, body: any) => id ? request<any>(`/documents/admin/ips/${id}`, { method: 'PUT', body: JSON.stringify(body) }) : request<any>('/documents/admin/ips', { method: 'POST', body: JSON.stringify(body) }),
+  docIpsDelete: (id: string) => request(`/documents/admin/ips/${id}`, { method: 'DELETE' }),
+  docTemplates: () => request<any[]>('/documents/admin/templates'),
+  docTemplateSave: (id: string | null, body: any) => id ? request<any>(`/documents/admin/templates/${id}`, { method: 'PUT', body: JSON.stringify(body) }) : request<any>('/documents/admin/templates', { method: 'POST', body: JSON.stringify(body) }),
+  docTemplateDelete: (id: string) => request(`/documents/admin/templates/${id}`, { method: 'DELETE' }),
+  docAssign: (templateId: string, userId: string) => request<any>('/documents/admin/assign', { method: 'POST', body: JSON.stringify({ templateId, userId }) }),
+  docSignedList: (userId?: string, status?: string) => {
+    const q = new URLSearchParams();
+    if (userId) q.set('userId', userId);
+    if (status) q.set('status', status);
+    const s = q.toString();
+    return request<any[]>(`/documents/admin/signed${s ? '?' + s : ''}`);
+  },
   analyzeFood: (description: string, mealType?: string, note?: string) =>
     request<any>('/food/analyze', { method: 'POST', body: JSON.stringify({ description, mealType, note }) }),
   pet: () => request<any>('/pet'),

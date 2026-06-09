@@ -261,6 +261,24 @@ export class AiOrchestratorService {
     return result;
   }
 
+  /** Verificación de identidad por foto (perfil vs en vivo). Registro de decisión incluido. */
+  async verifyIdentity(profileUrl: string, liveUrl: string) {
+    const r = await this.llm.verifyIdentity(profileUrl, liveUrl);
+    await this.prisma.aiDecisionLog.create({
+      data: {
+        inputHash: this.guardrails.hashForLog(profileUrl + '|' + liveUrl),
+        riskLevel: RiskLevel.NONE,
+        ruleMatches: [],
+        promptVersion: 'identity_vision@1.0.0',
+        model: this.llm.modelName,
+        outputSummary: `match=${r.match} conf=${r.confidence ?? 'n/d'}`,
+        action: AiAction.NORMAL,
+        validatorResult: 'PASS',
+      },
+    });
+    return r;
+  }
+
   /** Frase motivadora corta para el resumen diario de nutrición. */
   async nutritionMotivator(summary: string): Promise<string> {
     try {

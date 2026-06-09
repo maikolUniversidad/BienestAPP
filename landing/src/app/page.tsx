@@ -45,6 +45,14 @@ const ICONS: Record<string, ReactNode> = {
   layers: <path d="M12 3 2 9l10 6 10-6zM2 15l10 6 10-6" />,
   eye: <><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></>,
   hospital: <><rect x="4" y="7" width="16" height="14" rx="2" /><path d="M9 7V4h6v3M12 11v6M9 14h6" /></>,
+  salud: <><path d="M20.8 6.6a4.5 4.5 0 0 0-7.8-2 4.5 4.5 0 0 0-7.8 2c-1 3 1.4 5.6 7.8 11 6.4-5.4 8.8-8 7.8-11z" /><path d="M3 12h3l1.5-3 2 5 1.5-2h2" /></>,
+  cita: <><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M3 9h18M8 2v4M16 2v4M9 14l2 2 4-4" /></>,
+  video: <><rect x="3" y="6" width="13" height="12" rx="2" /><path d="M16 10l5-3v10l-5-3z" /></>,
+  firma: <><path d="M3 19c3 0 4-10 7-10s2 6 4 6 2-3 4-3" /><path d="M3 21h18" /></>,
+  kb: <><path d="M4 5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" /><path d="M14 3v5h5" /><circle cx="11" cy="13" r="2.2" /></>,
+  bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" /></>,
+  peso: <><path d="M6 7h12l3 13H3z" /><circle cx="12" cy="4.5" r="1.5" /><path d="M9 7a3 3 0 0 1 6 0" /></>,
+  mail: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></>,
 };
 function Ico({ k, color }: { k: string; color?: string }) {
   return (
@@ -59,17 +67,24 @@ const FEATURES = [
   { k: 'ia', t: 'Asistente IA seguro', d: 'Acompañamiento conversacional multimodal con límites claros: nunca diagnostica ni prescribe, detecta el tema emocional y deriva a una persona ante señales de riesgo.' },
   { k: 'sos', t: 'Botón SOS', d: 'Emergencia médica, crisis emocional, accidente o violencia. Envía ubicación (con tu permiso) y conecta con el call center.' },
   { k: 'call', t: 'Call center integrado', d: 'Cola priorizada por riesgo, historial autorizado, escalamiento a psicólogo o médico y trazabilidad completa.' },
-  { k: 'food', t: 'Alimentación con IA', d: 'Describe tu comida y obtén una estimación aproximada de calorías y macronutrientes. Orientativo, no diagnóstico.' },
+  { k: 'food', t: 'Contador de calorías con foto', d: 'Toma una foto a tu comida y la IA estima calorías y macros, la clasifica (desayuno, almuerzo, cena…) y te da un resumen diario con un dato motivador.' },
+  { k: 'peso', t: 'Peso, medidas y metas', d: 'Controla peso y medidas corporales con tendencias, y fija metas de calorías y de peso para seguir tu progreso.' },
+  { k: 'salud', t: 'Salud y wearables', d: 'Conecta tu reloj o pulsera (Apple Salud, Google Fit, Health Connect o Bluetooth) y la IA interpreta tus métricas de actividad y descanso.' },
+  { k: 'cita', t: 'Citas y telemedicina', d: 'Agenda y atiende videoconsultas seguras desde la plataforma con médicos y profesionales de la salud, con recordatorios automáticos.' },
+  { k: 'firma', t: 'Firma digital y documentos', d: 'Firma constancias y consentimientos con sello de integridad (hash), fecha, hora y dispositivo; la asistencia a citas se confirma con foto y verificación de identidad.' },
   { k: 'habits', t: 'Hábitos saludables', d: 'Caminatas, sueño, agua y pausas activas con metas, rachas y recordatorios. Constancia amable, sin culpa.' },
   { k: 'compi', t: 'Compi, tu compañía', d: 'Una mascota que evoluciona con tus hábitos positivos y te motiva sin presión ni manipulación emocional.' },
   { k: 'logros', t: 'Logros y gamificación', d: 'Cartas coleccionables, insignias, niveles de bienestar y retos individuales y grupales sin exponer datos sensibles.' },
   { k: 'tests', t: 'Tests y evaluaciones', d: 'Chequeos de estrés, sueño y ánimo con lenguaje responsable y escalamiento si el resultado indica riesgo.' },
   { k: 'biblioteca', t: 'Biblioteca de actividades', d: 'Respiración guiada, meditación, pausas activas, gratitud y educación en salud mental.' },
+  { k: 'kb', t: 'Asistente con base de conocimiento', d: 'El asistente IA responde con tablas, gráficos y enlaces, te guía a cada módulo y consulta la base de conocimiento oficial de tu EPS (trámites, citas, autorizaciones).' },
+  { k: 'mail', t: 'CRM y mensajería', d: 'El call center envía correo y WhatsApp con plantillas HTML y vista previa, ve el perfil 360° del afiliado y puede despachar ambulancia o asistencia.' },
+  { k: 'bell', t: 'Notificaciones inteligentes', d: 'Cada aviso te lleva a la actividad correspondiente. El administrador clasifica, prioriza, activa o silencia categorías y envía comunicados.' },
   { k: 'dashboard', t: 'Dashboard de bienestar', d: 'Tu ánimo del día, rachas, alimentación, actividad, logros y alertas preventivas en un solo lugar.' },
-  { k: 'privacidad', t: 'Privacidad y control', d: 'Consentimiento informado, control de permisos y separación de datos clínicos, emocionales y operativos.' },
+  { k: 'privacidad', t: 'Privacidad y control', d: 'Consentimiento informado, modo oscuro, control de permisos y separación de datos clínicos, emocionales y operativos.' },
 ];
 
-const ROLES = ['Afiliado', 'Operador call center', 'Psicólogo', 'Médico', 'Administrador EPS', 'Superadministrador', 'Auditor'];
+const ROLES = ['Afiliado', 'Operador call center', 'Psicólogo', 'Médico', 'Nutricionista', 'Enfermería', 'Trabajo social', 'Administrador EPS', 'Superadministrador', 'Auditor'];
 
 export default function Home() {
   return (
@@ -105,8 +120,8 @@ export default function Home() {
               <a className="btn btn-outline" href="#modulos">Explorar módulos</a>
             </div>
             <div className="hero-trust">
-              <div><b>16</b> módulos integrados</div>
-              <div><b>7</b> roles del sistema</div>
+              <div><b>20+</b> módulos integrados</div>
+              <div><b>10</b> roles del sistema</div>
               <div><b>24/7</b> botón SOS</div>
             </div>
           </div>
@@ -142,7 +157,7 @@ export default function Home() {
         <div className="container">
           <div className="sec-head">
             <span className="kicker">Todo en una app</span>
-            <h2>16 módulos que se complementan</h2>
+            <h2>20+ módulos que se complementan</h2>
             <p>Desde el diario emocional hasta el call center, cada pieza trabaja junta — unida por El Hilo.</p>
           </div>
           <div className="grid">
@@ -262,6 +277,7 @@ export default function Home() {
               { k: 'users', t: 'Acceso por roles', d: 'RBAC con auditoría append-only de cada acceso a información sensible.' },
               { k: 'layers', t: 'Datos separados', d: 'Información clínica, emocional y operativa en dominios distintos.' },
               { k: 'eye', t: 'Anonimización', d: 'Reportes agregados sin información personal identificable.' },
+              { k: 'firma', t: 'Firma con sello de integridad', d: 'Cada firma genera un hash SHA-256 con fecha, hora y dispositivo, e identidad verificada por foto — verificable y auditable.' },
               { k: 'hospital', t: 'Listo para FHIR/HL7', d: 'Arquitectura preparada para interoperabilidad clínica futura.' },
             ].map((s, i) => (
               <Reveal key={s.k} delay={(i % 3) * 90}>
