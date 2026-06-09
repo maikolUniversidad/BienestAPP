@@ -30,9 +30,9 @@ Leyenda: ✅ hecho · 🟡 parcial/base · ⬜ pendiente.
   - ⬜ Adjuntos clínicos por encuentro (reusa Storage + firma).
 - ⬜ **Consulta externa por especialidad** (plantillas por especialidad).
 - 🟡 **Consulta de urgencias** (triage Resolución 5596/2015 con cola priorizada por nivel 1–5 — entregado; pendiente: escalas clínicas detalladas).
-- ⬜ **Atención domiciliaria** (hospitalización en casa) — agenda + seguimiento.
+- 🟡 **Atención domiciliaria** (hospitalización en casa): programación de visitas con notificación, registro de visita con vitales→encuentro domiciliario. Pendiente: rutas de personal y geolocalización.
 - ⬜ **Cuidado crítico UCI** (registros de monitoreo, balance, escalas).
-- ⬜ **Ayudas diagnósticas**: laboratorio e imagenología (órdenes → resultados → FHIR DiagnosticReport/Observation).
+- 🟡 **Ayudas diagnósticas**: laboratorio e imagenología — worklist de órdenes, captura de resultados y reflejo en **FHIR DiagnosticReport**. Pendiente: integración con equipos/LIS y adjuntos de imagen.
 - 🟡 **Promoción y Prevención (PYP) – RIAS Res. 3280/2018** (ya hay base de PYP en la app; falta estructurar rutas por curso de vida y tamizajes).
 - 🟡 **Administración de medicamentos** (existe plan/medicación; falta MAR hospitalario: administración por horario y registro).
 - ⬜ **Procedimientos quirúrgicos** (programación, lista de chequeo OMS, notas quirúrgicas).

@@ -46,6 +46,7 @@ import { FacturacionModule } from './facturacion/facturacion.module';
 import { InventarioModule } from './inventario/inventario.module';
 import { ReportesModule } from './reportes/reportes.module';
 import { HospitalizacionModule } from './hospitalizacion/hospitalizacion.module';
+import { AsistencialModule } from './asistencial/asistencial.module';
 
 @Module({
   imports: [
@@ -89,6 +90,7 @@ import { HospitalizacionModule } from './hospitalizacion/hospitalizacion.module'
     InventarioModule,
     ReportesModule,
     HospitalizacionModule,
+    AsistencialModule,
   ],
   controllers: [AppController],
   providers: [

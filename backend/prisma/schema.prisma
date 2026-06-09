@@ -1072,6 +1072,24 @@ model Bed {
   @@index([ward, status])
 }
 
+/// Visita de atención domiciliaria (hospitalización en casa).
+model HomeVisit {
+  id             String   @id @default(cuid())
+  userId         String
+  professionalId String?
+  scheduledAt    DateTime
+  status         String   @default("scheduled") // scheduled | done | cancelled
+  address        String?
+  reason         String?
+  notes          String?
+  vitals         Json?
+  createdBy      String?
+  createdAt      DateTime @default(now())
+
+  @@index([userId, scheduledAt])
+  @@index([status, scheduledAt])
+}
+
 /// Clasificación de triage de urgencias (Resolución 5596 de 2015): nivel 1 (más urgente) a 5.
 model Triage {
   id             String   @id @default(cuid())

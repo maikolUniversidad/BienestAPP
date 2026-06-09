@@ -212,7 +212,10 @@ export class GestionService {
     d.encs.forEach((e) => entries.push(F.encounterResource(d.user.id, { id: `enc-${e.id}`, type: e.type, status: e.status, reason: e.reason ?? undefined, cie10: e.cie10 ?? undefined, startedAt: e.startedAt, endedAt: e.endedAt ?? undefined })));
     d.meds.forEach((m) => entries.push(F.medicationStatementResource(d.user.id, { id: m.id, name: m.name, dose: m.dose, schedule: m.schedule, active: m.active })));
     d.diagnoses.forEach((dx) => entries.push(F.conditionResource(d.user.id, { id: `dx-${dx.id}`, text: dx.description || dx.cie10, cie10: dx.cie10, date: dx.createdAt })));
-    d.orders.forEach((o) => entries.push(F.serviceRequestResource(d.user.id, { id: o.id, type: o.type, description: o.description, code: o.code ?? undefined, status: o.status, date: o.createdAt })));
+    d.orders.forEach((o) => {
+      entries.push(F.serviceRequestResource(d.user.id, { id: o.id, type: o.type, description: o.description, code: o.code ?? undefined, status: o.status, date: o.createdAt }));
+      if (o.result && (o.type === 'lab' || o.type === 'imaging')) entries.push(F.diagnosticReportResource(d.user.id, { id: o.id, type: o.type, description: o.description, code: o.code ?? undefined, result: o.result, date: o.updatedAt }));
+    });
     d.evolutions.forEach((e) => entries.push(F.clinicalImpressionResource(d.user.id, { id: e.id, encounterId: e.encounterId, assessment: e.assessment ?? undefined, plan: e.plan ?? undefined, date: e.createdAt })));
     d.docs.forEach((doc) => entries.push(F.documentReferenceResource(d.user.id, { id: doc.id, title: doc.title, status: doc.status, hash: doc.hash ?? undefined, signedAt: doc.signedAt ?? undefined })));
     const b = F.bundle(entries);

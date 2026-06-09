@@ -255,6 +255,15 @@ export const api = {
   hospTriage: (body: any) => request<any>('/hospitalizacion/triage', { method: 'POST', body: JSON.stringify(body) }),
   hospTriageQueue: () => request<any[]>('/hospitalizacion/triage'),
   hospTriageAttend: (id: string) => request<any>(`/hospitalizacion/triage/${id}/attend`, { method: 'PATCH' }),
+  // Asistencial: ayudas diagnósticas + atención domiciliaria
+  dxWorklist: (type?: string, status?: string) => {
+    const p = new URLSearchParams(); if (type) p.set('type', type); if (status) p.set('status', status);
+    const s = p.toString(); return request<any[]>(`/asistencial/diagnosticos${s ? '?' + s : ''}`);
+  },
+  dxSetResult: (id: string, body: any) => request<any>(`/asistencial/diagnosticos/${id}/result`, { method: 'PATCH', body: JSON.stringify(body) }),
+  homeSchedule: (body: any) => request<any>('/asistencial/domiciliaria', { method: 'POST', body: JSON.stringify(body) }),
+  homeVisits: (status?: string) => request<any[]>(`/asistencial/domiciliaria${status ? '?status=' + status : ''}`),
+  homeRegister: (id: string, body: any) => request<any>(`/asistencial/domiciliaria/${id}/register`, { method: 'PATCH', body: JSON.stringify(body) }),
 
   gestionFhir: (userId: string) => request<any>(`/gestion/fhir/patient/${userId}`),
   gestionHl7: async (userId: string) => {

@@ -136,6 +136,17 @@ export function serviceRequestResource(patientId: string, o: { id: string; type:
   };
 }
 
+export function diagnosticReportResource(patientId: string, o: { id: string; type: string; description: string; code?: string; result: string; date?: any }) {
+  return {
+    resourceType: 'DiagnosticReport', id: `report-${o.id}`, status: 'final',
+    category: [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/v2-0074', code: o.type === 'imaging' ? 'RAD' : 'LAB' }] }],
+    code: o.code ? { coding: [{ system: 'urn:oid:2.16.170.1.103', code: o.code }], text: o.description } : { text: o.description },
+    subject: { reference: `Patient/${patientId}` },
+    effectiveDateTime: iso(o.date),
+    conclusion: o.result,
+  };
+}
+
 export function clinicalImpressionResource(patientId: string, e: { id: string; encounterId: string; assessment?: string; plan?: string; date?: any }) {
   return {
     resourceType: 'ClinicalImpression', id: `evo-${e.id}`, status: 'completed',
