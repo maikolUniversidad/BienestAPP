@@ -9,6 +9,7 @@ import { NotificationsBell } from '../../components/notifications-bell';
 
 const NAV = [
   { href: '/overview', label: 'Resumen', ic: 'dashboard', roles: ['EPS_ADMIN', 'SUPERADMIN', 'AUDITOR'] },
+  { href: '/clinico', label: 'Clínico', ic: 'user', roles: ['PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/callcenter', label: 'Call Center', ic: 'call', roles: ['CALLCENTER_OPERATOR', 'PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/medicamentos', label: 'Medicación', ic: 'med', roles: ['PSYCHOLOGIST', 'PHYSICIAN', 'EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/alerts', label: 'Alertas de riesgo', ic: 'alerts', roles: ['EPS_ADMIN', 'PSYCHOLOGIST', 'PHYSICIAN', 'SUPERADMIN'] },
@@ -17,6 +18,7 @@ const NAV = [
 
 const TITLES: Record<string, string> = {
   '/overview': 'Resumen general',
+  '/clinico': 'Tablero clínico',
   '/callcenter': 'Call Center',
   '/medicamentos': 'Medicación de pacientes',
   '/alerts': 'Alertas de riesgo',

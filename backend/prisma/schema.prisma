@@ -598,6 +598,17 @@ model Notification {
   @@index([userId, read])
 }
 
+model ClinicalNote {
+  id        String   @id @default(cuid())
+  patientId String // afiliado/paciente
+  authorId  String // profesional que escribe la nota
+  category  String   @default("seguimiento") // seguimiento | evaluacion | observacion
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([patientId, createdAt])
+}
+
 model AuditLog {
   id        String   @id @default(cuid())
   actorId   String?

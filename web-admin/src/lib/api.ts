@@ -92,6 +92,13 @@ export const api = {
   medProAssign: (userId: string, m: { name: string; dose: string; route?: string; schedule: string[]; instructions?: string }) =>
     request(`/medications/pro/patients/${userId}/items`, { method: 'POST', body: JSON.stringify(m) }),
   medProRemove: (id: string) => request(`/medications/pro/items/${id}`, { method: 'DELETE' }),
+  // Clínico
+  clinicalPatients: () => request<any[]>('/clinical/patients'),
+  clinicalAlerts: () => request<any[]>('/clinical/alerts'),
+  reviewAlert: (id: string) => request(`/clinical/alerts/${id}/review`, { method: 'PATCH' }),
+  clinicalPatient: (userId: string) => request<any>(`/clinical/patients/${userId}`),
+  addClinicalNote: (userId: string, body: string, category?: string) =>
+    request(`/clinical/patients/${userId}/notes`, { method: 'POST', body: JSON.stringify({ body, category }) }),
   audit: (action?: string) =>
     request<any[]>(`/admin/audit${action ? `?action=${encodeURIComponent(action)}` : ''}`),
 

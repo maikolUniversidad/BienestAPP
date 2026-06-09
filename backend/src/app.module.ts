@@ -32,6 +32,7 @@ import { ContentModule } from './content/content.module';
 import { GoalsModule } from './goals/goals.module';
 import { EmergencyContactsModule } from './emergency-contacts/emergency-contacts.module';
 import { MedicationsModule } from './medications/medications.module';
+import { ClinicalModule } from './clinical/clinical.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { MedicationsModule } from './medications/medications.module';
     GoalsModule,
     EmergencyContactsModule,
     MedicationsModule,
+    ClinicalModule,
   ],
   controllers: [AppController],
   providers: [
