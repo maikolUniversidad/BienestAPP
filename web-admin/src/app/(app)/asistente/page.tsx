@@ -1,11 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { api } from '../../../lib/api';
 import { uploadChatFile } from '../../../lib/storage';
+import { ChatMessage } from '../../../components/chat-message';
+import { Ico } from '../../../components/brand';
 
 interface Att { type: 'image' | 'audio'; path: string; previewUrl: string; }
-interface Msg { role: 'user' | 'assistant'; content: string; theme?: string; atts?: Att[]; }
+interface ActionBtn { label: string; href: string; icon?: string; }
+interface Msg { role: 'user' | 'assistant'; content: string; theme?: string; atts?: Att[]; actions?: ActionBtn[]; }
 
 const THEME_LABEL: Record<string, string> = {
   ANXIETY: '😰 Ansiedad', SADNESS: '😢 Tristeza', STRESS: '😣 Estrés', ANGER: '😠 Enojo',
@@ -122,7 +126,7 @@ export default function Asistente() {
         res = await api.sendMessage(id, text, sentAtts.map(({ type, path }) => ({ type, path })));
         loadConvos(); // refresca títulos/orden del historial
       }
-      setMsgs((m) => [...m, { role: 'assistant', content: res.message.content, theme: res.emotionalTheme }]);
+      setMsgs((m) => [...m, { role: 'assistant', content: res.message.content, theme: res.emotionalTheme, actions: res.actions ?? [] }]);
       if (res.crisisProtocol?.active) setCrisis(res.crisisProtocol);
     } catch {
       setMsgs((m) => [...m, { role: 'assistant', content: 'No pude responder ahora. ¿Intentamos de nuevo?' }]);
@@ -182,7 +186,17 @@ export default function Asistente() {
                     : <audio src={a.previewUrl} controls style={{ height: 34 }} />}
                 </div>
               ))}
-              {m.content}
+              {m.role === 'assistant' ? <ChatMessage content={m.content} /> : m.content}
+              {m.role === 'assistant' && m.actions && m.actions.length > 0 && (
+                <div className="chat-actions">
+                  {m.actions.map((a, k) => (
+                    <Link key={k} href={a.href} className="chat-action">
+                      {a.icon && <span className="ic"><Ico k={a.icon} size={16} /></span>}
+                      {a.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
               {m.role === 'assistant' && m.theme && m.theme !== 'NEUTRAL' && (
                 <div style={{ marginTop: 6, fontSize: 11, opacity: .8 }}>Tema detectado: {THEME_LABEL[m.theme] ?? m.theme}</div>
               )}

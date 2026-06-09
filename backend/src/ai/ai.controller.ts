@@ -107,6 +107,7 @@ export class AiController {
       riskLevel: reply.riskLevel,
       emotionalTheme: reply.emotionalTheme,
       crisisProtocol: reply.crisisProtocol,
+      actions: reply.actions ?? [],
     };
   }
 
@@ -165,6 +166,7 @@ export class AiController {
       riskLevel: reply.riskLevel,
       emotionalTheme: reply.emotionalTheme,
       crisisProtocol: reply.crisisProtocol,
+      actions: reply.actions ?? [],
     };
   }
 }

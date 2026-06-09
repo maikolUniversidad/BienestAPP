@@ -151,12 +151,12 @@ export const api = {
   getConversation: (id: string) => request<any>(`/ai/conversations/${id}`),
   deleteConversation: (id: string) => request(`/ai/conversations/${id}`, { method: 'DELETE' }),
   sendEphemeral: (content: string, history: { role: string; content: string }[]) =>
-    request<{ message: { content: string }; riskLevel: string; emotionalTheme?: string; crisisProtocol?: any }>(
+    request<{ message: { content: string }; riskLevel: string; emotionalTheme?: string; crisisProtocol?: any; actions?: { label: string; href: string; icon?: string }[] }>(
       '/ai/ephemeral/messages',
       { method: 'POST', body: JSON.stringify({ content, history }) },
     ),
   sendMessage: (id: string, content: string, attachments?: any[]) =>
-    request<{ message: { content: string }; riskLevel: string; emotionalTheme?: string; crisisProtocol?: any }>(
+    request<{ message: { content: string }; riskLevel: string; emotionalTheme?: string; crisisProtocol?: any; actions?: { label: string; href: string; icon?: string }[] }>(
       `/ai/conversations/${id}/messages`,
       { method: 'POST', body: JSON.stringify({ content, attachments }) },
     ),

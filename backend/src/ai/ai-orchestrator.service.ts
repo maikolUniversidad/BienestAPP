@@ -10,12 +10,14 @@ import { PromptRegistry } from './prompts/prompt-registry';
 import { LlmProvider, LlmMessage } from './llm/llm.provider';
 import { EscalationService, CrisisProtocol } from './escalation/escalation.service';
 import { KnowledgeService } from '../knowledge/knowledge.module';
+import { suggestActions, ChatAction } from './chat-actions';
 
 export interface OrchestratorReply {
   content: string;
   riskLevel: RiskLevel;
   emotionalTheme: string;
   crisisProtocol?: CrisisProtocol;
+  actions?: ChatAction[];
 }
 
 export interface Attachment {
@@ -153,7 +155,7 @@ export class AiOrchestratorService {
       await this.persistMessages(params.conversationId, clean, validated.content, risk.level, theme, att);
     }
 
-    return { content: validated.content, riskLevel: risk.level, emotionalTheme: theme };
+    return { content: validated.content, riskLevel: risk.level, emotionalTheme: theme, actions: suggestActions(clean, theme) };
   }
 
   /** Recupera conocimiento institucional (global + EPS del afiliado) relevante a la consulta. */
