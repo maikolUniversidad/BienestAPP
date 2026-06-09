@@ -176,6 +176,16 @@ export const api = {
   savePet: (name: string, species: string) =>
     request('/pet', { method: 'POST', body: JSON.stringify({ name, species }) }),
   content: (type?: string) => request<any[]>(`/content${type ? `?type=${type}` : ''}`),
+  // Comunidad
+  communityContent: (section?: string) => request<any[]>(`/community/content${section ? `?section=${section}` : ''}`),
+  communityPosts: () => request<any[]>('/community/posts'),
+  createCommunityPost: (p: { body: string; anonymous?: boolean; type?: string }) =>
+    request('/community/posts', { method: 'POST', body: JSON.stringify(p) }),
+  likePost: (id: string) => request<{ liked: boolean; likes: number }>(`/community/posts/${id}/like`, { method: 'POST' }),
+  adminCreateContent: (dto: any) => request('/admin/community/content', { method: 'POST', body: JSON.stringify(dto) }),
+  adminRemoveContent: (id: string) => request(`/admin/community/content/${id}`, { method: 'DELETE' }),
+  adminCommunityPosts: () => request<any[]>('/admin/community/posts'),
+  moderatePost: (id: string, status: string) => request(`/admin/community/posts/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   // Hábitos especializados (sueño / hidratación / actividad) via ExerciseLog
   exerciseToday: () => request<any>('/exercise/today'),
   logExercise: (type: string, value: number, unit: string) =>

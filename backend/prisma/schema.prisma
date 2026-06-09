@@ -179,6 +179,7 @@ model User {
   goals            Goal[]
   medicationItems  MedicationItem[]
   pqrs             Pqrs[]
+  communityPosts   CommunityPost[]
   pet              VirtualPet?
   achievements     UserAchievementCard[]
   testResults      TestResult[]
@@ -598,6 +599,45 @@ model Notification {
   createdAt DateTime         @default(now())
 
   @@index([userId, read])
+}
+
+model CommunityContent {
+  id            String   @id @default(cuid())
+  section       String // biblioteca | voz | tendencia | galeria | articulo
+  title         String
+  description   String?
+  mediaUrl      String?
+  thumbnailUrl  String?
+  author        String?
+  durationLabel String?
+  tags          String[]
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@index([section, active])
+}
+
+model CommunityPost {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String          @default("post") // post | pregunta
+  body      String
+  anonymous Boolean         @default(false)
+  likes     Int             @default(0)
+  status    String          @default("approved") // approved | hidden | pending
+  likeRefs  CommunityLike[]
+  createdAt DateTime        @default(now())
+
+  @@index([status, createdAt])
+}
+
+model CommunityLike {
+  userId String
+  postId String
+  post   CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
 }
 
 model Pqrs {

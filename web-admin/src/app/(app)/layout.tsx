@@ -16,6 +16,7 @@ const NAV = [
   { href: '/medicacion', label: 'Medicación', ic: 'med', primary: false },
   { href: '/metas', label: 'Metas', ic: 'metas', primary: false },
   { href: '/alimentacion', label: 'Alimentación', ic: 'food', primary: false },
+  { href: '/comunidad', label: 'Comunidad', ic: 'comunidad', primary: false },
   { href: '/biblioteca', label: 'Biblioteca', ic: 'biblioteca', primary: false },
   { href: '/tests', label: 'Tests', ic: 'tests', primary: false },
   { href: '/logros', label: 'Logros', ic: 'logros', primary: false },
