@@ -43,7 +43,7 @@ export function NotificationsBell() {
     <div ref={ref} style={{ position: 'relative' }}>
       <button onClick={toggle} aria-label="Notificaciones" style={btn}>
         🔔
-        {count > 0 && <span style={badge}>{count > 9 ? '9+' : count}</span>}
+        {count > 0 && <span className="bell-badge" style={badge}>{count > 9 ? '9+' : count}</span>}
       </button>
       {open && (
         <div style={panel}>

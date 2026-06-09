@@ -167,5 +167,68 @@ footer a:hover { color: var(--coral); }
 .disclaimer { border-top: 1px solid rgba(255,255,255,.1); padding-top: 20px; font-size: 13px; color: var(--indigo-300); }
 .endorse { font-size: 12px; color: var(--indigo-300); margin-top: 8px; }
 
-.fade-up { animation: fadeUp .7s cubic-bezier(.4,0,.2,1) both; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.fade-up { animation: fadeUp .8s cubic-bezier(.16,1,.3,1) both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+
+/* ===================== POLISH VISUAL 10/10 ===================== */
+@media (prefers-reduced-motion: no-preference) {
+
+/* Scroll reveal */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1); }
+.reveal.in { opacity: 1; transform: none; }
+
+/* Aurora / mesh animada en hero y CTA */
+.aurora { position: absolute; inset: -20%; z-index: -2; filter: blur(60px); opacity: .55; pointer-events: none; }
+.aurora span { position: absolute; border-radius: 50%; mix-blend-mode: multiply; animation: drift 18s ease-in-out infinite; }
+.aurora .a1 { width: 46vw; height: 46vw; left: 55%; top: -10%; background: radial-gradient(circle, rgba(255,122,89,.55), transparent 70%); }
+.aurora .a2 { width: 40vw; height: 40vw; left: -10%; top: 20%; background: radial-gradient(circle, rgba(95,155,126,.45), transparent 70%); animation-delay: -6s; }
+.aurora .a3 { width: 38vw; height: 38vw; left: 30%; top: 40%; background: radial-gradient(circle, rgba(123,145,188,.45), transparent 70%); animation-delay: -12s; }
+@keyframes drift { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(4%, -6%) scale(1.08); } 66% { transform: translate(-5%, 5%) scale(.95); } }
+
+/* El Hilo que se dibuja solo */
+.hilo-draw path { stroke-dasharray: 2600; stroke-dashoffset: 2600; animation: draw 3s cubic-bezier(.16,1,.3,1) forwards; }
+.hilo-draw path:nth-child(2) { animation-delay: .25s; opacity: .5; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+/* Flotación suave (logo/orbes/hero art) */
+.float { animation: float 7s ease-in-out infinite; }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+
+/* Latido del isotipo (nav/footer) */
+.brand-lockup:hover svg { animation: beat 1.2s ease-in-out; }
+@keyframes beat { 0%,100% { transform: scale(1); } 25% { transform: scale(1.12); } 40% { transform: scale(.96); } 60% { transform: scale(1.06); } }
+
+}
+
+/* Tarjetas: lift + glow (también sin motion, es hover) */
+.card { position: relative; }
+.card::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 0 rgba(255,122,89,0); transition: box-shadow .3s, border-color .3s; pointer-events: none; }
+.card:hover { transform: translateY(-6px); }
+.card:hover::after { box-shadow: 0 0 0 1.5px rgba(255,122,89,.35); }
+.card .ico { transition: transform .3s cubic-bezier(.16,1,.3,1), background .3s; }
+.card:hover .ico { transform: scale(1.1) rotate(-4deg); background: var(--coral); color: #fff; }
+
+/* Botones con brillo */
+.btn { position: relative; overflow: hidden; }
+.btn::before { content: ""; position: absolute; top: 0; left: -120%; width: 60%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.45), transparent); transform: skewX(-18deg); transition: left .55s ease; }
+.btn:hover::before { left: 140%; }
+
+/* Hero art frame con borde gradiente */
+.hero-art { position: relative; }
+.hero-art::before { content: ""; position: absolute; inset: -2px; border-radius: calc(var(--radio-xl) + 2px); background: linear-gradient(130deg, var(--coral), var(--salvia), var(--azul)); z-index: -1; opacity: .8; }
+
+/* Eyebrow con punto que pulsa */
+.eyebrow::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--salvia); margin-left: 2px; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(94,155,126,.5); } 50% { opacity: .6; box-shadow: 0 0 0 6px rgba(94,155,126,0); } }
+
+/* Stats grandes en Fraunces con subrayado coral */
+.hero-trust b { position: relative; }
+.steps .n { box-shadow: 0 10px 24px -10px rgba(27,42,74,.5); transition: transform .25s; }
+.step:hover .n { transform: translateY(-4px) scale(1.05); }
+
+/* Chips de roles con hover */
+.role-chip { transition: transform .2s, border-color .2s, color .2s; }
+.role-chip:hover { transform: translateY(-2px); border-color: var(--coral); color: var(--coral-deep); }
+
+/* Divider con el hilo */
+.section-hilo { display: block; width: 100%; height: 60px; color: var(--coral); opacity: .35; }

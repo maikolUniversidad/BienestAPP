@@ -171,3 +171,50 @@ tbody tr:hover { background: #FBF8F3; }
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
   .mood-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ===================== POLISH VISUAL 10/10 ===================== */
+@media (prefers-reduced-motion: no-preference) {
+  /* Entrada suave del contenido al navegar */
+  .content { animation: pageIn .5s cubic-bezier(.16,1,.3,1) both; }
+  @keyframes pageIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  /* Cards interactivas */
+  .card { transition: transform .2s cubic-bezier(.16,1,.3,1), box-shadow .2s; }
+  .card.hover:hover, .card.stat:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+  .stat .ic { transition: transform .25s; }
+  .card:hover .ic { transform: scale(1.06); }
+
+  /* Nav item activo: deslizamiento del fondo */
+  .nav-item { position: relative; }
+  .nav-item.active { animation: navPop .3s cubic-bezier(.16,1,.3,1); }
+  @keyframes navPop { from { transform: translateX(-4px); opacity: .6; } to { transform: none; opacity: 1; } }
+
+  /* Filas de tabla */
+  tbody tr { transition: background .15s; }
+
+  /* Campana: badge que pulsa */
+  .bell-badge { animation: bellPulse 2.2s ease-in-out infinite; }
+  @keyframes bellPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(200,69,59,.55); } 50% { box-shadow: 0 0 0 5px rgba(200,69,59,0); } }
+
+  /* FAB SOS: latido sutil */
+  .sos-fab { animation: sosBeat 2.6s ease-in-out infinite; }
+  @keyframes sosBeat { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+
+  /* Spinner reutilizable */
+  .spin { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--niebla); border-top-color: var(--coral); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+}
+
+/* Botones con brillo (también sin motion: solo en hover) */
+.btn { position: relative; overflow: hidden; }
+.btn::before { content: ""; position: absolute; top: 0; left: -120%; width: 55%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.4), transparent); transform: skewX(-18deg); transition: left .5s ease; }
+.btn:hover::before { left: 140%; }
+
+/* Chips e iconos de nav con micro-interacción */
+.chip { transition: transform .15s, filter .15s; }
+.chip:active { transform: scale(.96); }
+.mood-btn { transition: transform .15s, border-color .15s, background .15s; }
+.mood-btn:active { transform: scale(.97); }
+
+/* Anillos de progreso suaves */
+svg circle { transition: stroke-dashoffset .5s cubic-bezier(.16,1,.3,1); }

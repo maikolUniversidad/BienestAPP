@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Reveal } from './reveal';
 
 const PANEL_URL = 'https://bienest-admin.vercel.app';
 const API_URL = 'https://bienest-app.vercel.app';
@@ -75,7 +76,7 @@ export default function Home() {
     <>
       <nav className="nav">
         <div className="container nav-inner">
-          <a className="brand-lockup" href="#top"><Hilo size={38} /><span className="name">Bienest<span className="app">APP</span></span></a>
+          <a className="brand-lockup" href="#top"><span className="float"><Hilo size={38} /></span><span className="name">Bienest<span className="app">APP</span></span></a>
           <div className="nav-links">
             <a href="#modulos">Módulos</a>
             <a href="#ia">IA Segura</a>
@@ -88,7 +89,8 @@ export default function Home() {
 
       {/* HERO */}
       <header id="top" className="hero">
-        <HiloWave className="hero-bg" />
+        <div className="aurora" aria-hidden><span className="a1" /><span className="a2" /><span className="a3" /></div>
+        <HiloWave className="hero-bg hilo-draw" />
         <div className="container hero-grid">
           <div className="fade-up">
             <span className="eyebrow">Salud mental preventiva · Colombia</span>
@@ -108,7 +110,7 @@ export default function Home() {
               <div><b>24/7</b> botón SOS</div>
             </div>
           </div>
-          <div className="fade-up">
+          <div className="fade-up float">
             <div className="hero-art"><img src="/hero.png" alt="Persona usando BienestAPP con calma" /></div>
           </div>
         </div>
@@ -131,7 +133,7 @@ export default function Home() {
               <li><span className="chk">✓</span> Privacidad y lenguaje responsable.</li>
             </ul>
           </div>
-          <div className="hero-art"><img src="/hero.png" alt="" /></div>
+          <Reveal><img src="/hilo-art.png" alt="El Hilo — el trazo continuo del cuidado" style={{ width: '100%', borderRadius: 'var(--radio-l)', boxShadow: 'var(--sombra-l)', display: 'block' }} /></Reveal>
         </div>
       </section>
 
@@ -144,12 +146,14 @@ export default function Home() {
             <p>Desde el diario emocional hasta el call center, cada pieza trabaja junta — unida por El Hilo.</p>
           </div>
           <div className="grid">
-            {FEATURES.map((f) => (
-              <div className="card" key={f.t}>
-                <div className="ico"><Ico k={f.k} /></div>
-                <h3>{f.t}</h3>
-                <p>{f.d}</p>
-              </div>
+            {FEATURES.map((f, i) => (
+              <Reveal key={f.t} delay={(i % 3) * 90}>
+                <div className="card">
+                  <div className="ico"><Ico k={f.k} /></div>
+                  <h3>{f.t}</h3>
+                  <p>{f.d}</p>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -200,7 +204,7 @@ export default function Home() {
       {/* MASCOTA */}
       <section className="sec mascota">
         <div className="container mascota-band">
-          <img src="/mascota.png" alt="Compi, la mascota de bienestar" />
+          <img className="float" src="/mascota.png" alt="Compi, la mascota de bienestar" />
           <div>
             <span className="kicker">Conoce a Compi</span>
             <h2 style={{ fontSize: 34, color: 'var(--tinta)', margin: '12px 0 14px' }}>Tu compañero de bienestar</h2>
@@ -252,12 +256,18 @@ export default function Home() {
           <div className="sec-head"><span className="kicker">Seguridad y cumplimiento</span><h2>Hecho para datos de salud</h2>
             <p>Privacidad por diseño y cumplimiento con la normativa de protección de datos en Colombia.</p></div>
           <div className="grid">
-            <div className="card"><div className="ico"><Ico k="shield" /></div><h3>Cifrado en tránsito y reposo</h3><p>TLS y cifrado de columnas sensibles. Tus datos viajan y se guardan protegidos.</p></div>
-            <div className="card"><div className="ico"><Ico k="doc" /></div><h3>Habeas Data (Ley 1581)</h3><p>Consentimiento informado, finalidad declarada y tus derechos siempre disponibles.</p></div>
-            <div className="card"><div className="ico"><Ico k="users" /></div><h3>Acceso por roles</h3><p>RBAC con auditoría append-only de cada acceso a información sensible.</p></div>
-            <div className="card"><div className="ico"><Ico k="layers" /></div><h3>Datos separados</h3><p>Información clínica, emocional y operativa en dominios distintos.</p></div>
-            <div className="card"><div className="ico"><Ico k="eye" /></div><h3>Anonimización</h3><p>Reportes agregados sin información personal identificable.</p></div>
-            <div className="card"><div className="ico"><Ico k="hospital" /></div><h3>Listo para FHIR/HL7</h3><p>Arquitectura preparada para interoperabilidad clínica futura.</p></div>
+            {[
+              { k: 'shield', t: 'Cifrado en tránsito y reposo', d: 'TLS y cifrado de columnas sensibles. Tus datos viajan y se guardan protegidos.' },
+              { k: 'doc', t: 'Habeas Data (Ley 1581)', d: 'Consentimiento informado, finalidad declarada y tus derechos siempre disponibles.' },
+              { k: 'users', t: 'Acceso por roles', d: 'RBAC con auditoría append-only de cada acceso a información sensible.' },
+              { k: 'layers', t: 'Datos separados', d: 'Información clínica, emocional y operativa en dominios distintos.' },
+              { k: 'eye', t: 'Anonimización', d: 'Reportes agregados sin información personal identificable.' },
+              { k: 'hospital', t: 'Listo para FHIR/HL7', d: 'Arquitectura preparada para interoperabilidad clínica futura.' },
+            ].map((s, i) => (
+              <Reveal key={s.k} delay={(i % 3) * 90}>
+                <div className="card"><div className="ico"><Ico k={s.k} /></div><h3>{s.t}</h3><p>{s.d}</p></div>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
@@ -266,7 +276,8 @@ export default function Home() {
       <section className="sec">
         <div className="container">
           <div className="cta">
-            <HiloWave className="hero-bg" />
+            <div className="aurora" aria-hidden><span className="a1" /><span className="a2" /></div>
+            <HiloWave className="hero-bg hilo-draw" />
             <h2>Empieza a cuidar tu bienestar hoy</h2>
             <p>Explora la app en vivo o conéctate con tu equipo de Nueva EPS para activarla.</p>
             <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap', position: 'relative' }}>
