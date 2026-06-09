@@ -419,6 +419,8 @@ model FoodLog {
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   imageUrl      String?
+  mealType      String? // desayuno | merienda | almuerzo | onces | cena | espontanea
+  note          String?
   detectedItems Json? // [{name, confidence}]
   calories      Int? // aproximado
   macros        Json? // {protein, carbs, fat}
@@ -600,8 +602,10 @@ model Notification {
   userId    String
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   type      NotificationType
+  category  String? // clave de NotificationCategory (clasificación fina, parametrizable)
   title     String
   body      String
+  href      String? // ruta de la app a la que dirige al tocar la notificación
   read      Boolean          @default(false)
   data      Json?
   createdAt DateTime         @default(now())
@@ -837,6 +841,38 @@ model Appointment {
   @@index([affiliateId, scheduledAt])
   @@index([professionalId, scheduledAt])
   @@index([status, scheduledAt])
+}
+
+/// Meta numérica de salud/nutrición del afiliado (calorías diarias, peso objetivo, medidas).
+model HealthTarget {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String // calories_daily | weight | waist | hip | chest | arm | thigh | body_fat
+  target    Float
+  unit      String
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, type])
+}
+
+/// Categoría/clasificación de notificación parametrizable por el administrador.
+/// level: 1 = alta/crítica, 2 = normal, 3 = informativa. enabled=false silencia la categoría.
+model NotificationCategory {
+  key           String   @id // p.ej. appointment, nutrition_summary, weight, achievement
+  label         String
+  description   String?
+  type          NotificationType @default(SYSTEM)
+  level         Int      @default(2)
+  icon          String?
+  href          String? // ruta por defecto
+  enabled       Boolean  @default(true)
+  broadcastable Boolean  @default(false) // el admin puede emitirla manualmente a varios usuarios
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([level])
 }
 
 /// Despacho de ambulancia / visita domiciliaria / telemetría desde el call center.

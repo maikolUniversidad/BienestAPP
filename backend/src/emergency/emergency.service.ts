@@ -56,8 +56,10 @@ export class EmergencyService {
     await this.notifications.notify({
       userId,
       type: 'CALLCENTER',
+      category: 'emergency',
       title: 'Tu solicitud de ayuda fue registrada',
       body: 'Un operador te atenderá pronto. Si es una emergencia vital, llama al 123 o a la Línea 106.',
+      href: '/',
       data: { ticketId: ticket.id },
     });
 

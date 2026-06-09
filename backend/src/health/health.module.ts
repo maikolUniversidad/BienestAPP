@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Injectable, Module, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Injectable, Module, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { IsArray, IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -6,8 +6,11 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AiModule } from '../ai/ai.module';
 import { AiOrchestratorService } from '../ai/ai-orchestrator.service';
 
-const METRIC_TYPES = ['heart_rate', 'steps', 'sleep', 'calories', 'distance', 'active_minutes', 'hrv', 'spo2', 'weight'];
+const METRIC_TYPES = ['heart_rate', 'steps', 'sleep', 'calories', 'distance', 'active_minutes', 'hrv', 'spo2', 'weight', 'waist', 'hip', 'chest', 'arm', 'thigh', 'bmi', 'body_fat'];
 const PROVIDERS = ['apple_health', 'google_fit', 'health_connect', 'wearable_ble', 'manual'];
+const TARGET_TYPES = ['calories_daily', 'weight', 'waist', 'hip', 'chest', 'arm', 'thigh', 'body_fat', 'steps_daily'];
+// Tipos de medida corporal que se muestran en el panel de control de peso/medidas.
+const BODY_TYPES = ['weight', 'waist', 'hip', 'chest', 'arm', 'thigh', 'bmi', 'body_fat'];
 
 class MetricDto {
   @IsIn(METRIC_TYPES) type: string;
@@ -23,6 +26,12 @@ class IngestDto {
 class ConnectDto {
   @IsIn(PROVIDERS) provider: string;
   @IsOptional() @IsString() deviceName?: string;
+}
+class TargetDto {
+  @IsIn(TARGET_TYPES) type: string;
+  @IsNumber() target: number;
+  @IsString() unit: string;
+  @IsOptional() @IsString() note?: string;
 }
 
 @Injectable()
@@ -92,6 +101,33 @@ export class HealthService {
     };
   }
 
+  // ───────────── Metas (calorías, peso, medidas) ─────────────
+  targets(userId: string) {
+    return this.prisma.healthTarget.findMany({ where: { userId }, orderBy: { type: 'asc' } });
+  }
+  upsertTarget(userId: string, dto: TargetDto) {
+    return this.prisma.healthTarget.upsert({
+      where: { userId_type: { userId, type: dto.type } },
+      update: { target: dto.target, unit: dto.unit, note: dto.note },
+      create: { userId, type: dto.type, target: dto.target, unit: dto.unit, note: dto.note },
+    });
+  }
+
+  /** Control de peso y medidas: último valor y serie reciente de cada medida + metas. */
+  async body(userId: string) {
+    const latest: Record<string, any> = {};
+    const series: Record<string, { value: number; at: Date }[]> = {};
+    await Promise.all(BODY_TYPES.map(async (type) => {
+      const rows = await this.prisma.healthMetric.findMany({ where: { userId, type }, orderBy: { recordedAt: 'desc' }, take: 12, select: { value: true, unit: true, recordedAt: true } });
+      if (rows.length) {
+        latest[type] = { value: rows[0].value, unit: rows[0].unit, at: rows[0].recordedAt };
+        series[type] = rows.slice().reverse().map((r) => ({ value: r.value, at: r.recordedAt }));
+      }
+    }));
+    const targets = await this.prisma.healthTarget.findMany({ where: { userId } });
+    return { latest, series, targets };
+  }
+
   /** "Interpreta y gestiona": lectura IA de los datos de salud. */
   async interpret(userId: string) {
     const s = await this.summary(userId);
@@ -139,6 +175,18 @@ export class HealthController {
   @Get('interpret')
   interpret(@CurrentUser('id') userId: string) {
     return this.health.interpret(userId);
+  }
+  @Get('targets')
+  targets(@CurrentUser('id') userId: string) {
+    return this.health.targets(userId);
+  }
+  @Put('targets')
+  upsertTarget(@CurrentUser('id') userId: string, @Body() dto: TargetDto) {
+    return this.health.upsertTarget(userId, dto);
+  }
+  @Get('body')
+  body(@CurrentUser('id') userId: string) {
+    return this.health.body(userId);
   }
 }
 

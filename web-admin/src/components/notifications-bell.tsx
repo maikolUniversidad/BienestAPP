@@ -1,13 +1,19 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { api } from '../lib/api';
 
 const ICON: Record<string, string> = {
   ACHIEVEMENT: '🏅', REMINDER: '💊', RISK_ALERT: '⚠️', CALLCENTER: '📞', SYSTEM: 'ℹ️',
 };
+const CAT_ICON: Record<string, string> = {
+  appointment: '🗓️', dispatch: '🚑', emergency: '🚨', risk: '⚠️', medication: '💊',
+  nutrition_summary: '🍎', weight: '⚖️', goal_completed: '🎯', achievement: '🏅', pqrs: '📨', broadcast: '📢',
+};
 
 export function NotificationsBell() {
+  const router = useRouter();
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<any[]>([]);
@@ -33,6 +39,9 @@ export function NotificationsBell() {
   }
   async function readOne(n: any) {
     if (!n.read) { await api.markNotifRead(n.id).catch(() => undefined); setItems((xs) => xs.map((x) => x.id === n.id ? { ...x, read: true } : x)); refreshCount(); }
+    // Lleva a la actividad correspondiente (módulo) si la notificación tiene destino.
+    const href = n.href || n.data?.href;
+    if (href) { setOpen(false); router.push(href); }
   }
   async function readAll() {
     await api.markAllNotifRead().catch(() => undefined);
@@ -54,8 +63,8 @@ export function NotificationsBell() {
           <div style={{ maxHeight: 360, overflowY: 'auto' }}>
             {items.length === 0 && <div className="empty" style={{ padding: 24 }}>Sin notificaciones.</div>}
             {items.map((n) => (
-              <div key={n.id} onClick={() => readOne(n)} style={{ display: 'flex', gap: 10, padding: '11px 14px', borderBottom: '1px solid var(--line)', cursor: 'pointer', background: n.read ? '#fff' : 'var(--durazno)' }}>
-                <div style={{ fontSize: 18 }}>{ICON[n.type] ?? 'ℹ️'}</div>
+              <div key={n.id} onClick={() => readOne(n)} style={{ display: 'flex', gap: 10, padding: '11px 14px', borderBottom: '1px solid var(--line)', cursor: 'pointer', background: n.read ? 'var(--card)' : 'var(--durazno)' }}>
+                <div style={{ fontSize: 18 }}>{CAT_ICON[n.category] ?? ICON[n.type] ?? 'ℹ️'}</div>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontWeight: 700, color: 'var(--tinta)', fontSize: 14 }}>{n.title}</div>
                   <div className="muted" style={{ fontSize: 13 }}>{n.body}</div>
@@ -72,4 +81,4 @@ export function NotificationsBell() {
 
 const btn: React.CSSProperties = { position: 'relative', background: 'var(--niebla)', border: '1px solid var(--line)', borderRadius: 10, padding: '7px 10px', cursor: 'pointer', fontSize: 16 };
 const badge: React.CSSProperties = { position: 'absolute', top: -6, right: -6, background: 'var(--sos)', color: '#fff', borderRadius: 999, fontSize: 10, fontWeight: 700, minWidth: 18, height: 18, display: 'grid', placeItems: 'center', padding: '0 4px' };
-const panel: React.CSSProperties = { position: 'absolute', right: 0, top: 'calc(100% + 8px)', width: 340, maxWidth: '90vw', background: '#fff', border: '1px solid var(--line)', borderRadius: 16, boxShadow: 'var(--shadow)', zIndex: 200, overflow: 'hidden' };
+const panel: React.CSSProperties = { position: 'absolute', right: 0, top: 'calc(100% + 8px)', width: 340, maxWidth: '90vw', background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 16, boxShadow: 'var(--shadow)', zIndex: 200, overflow: 'hidden' };

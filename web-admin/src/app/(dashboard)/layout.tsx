@@ -23,6 +23,7 @@ const NAV = [
   { href: '/comunidad-admin', label: 'Comunidad', ic: 'comunidad', roles: ['EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/pqrs-gestion', label: 'PQRS', ic: 'pqrs', roles: ['EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/conocimiento', label: 'Base de conocimiento IA', ic: 'kb', roles: ['EPS_ADMIN', 'SUPERADMIN'] },
+  { href: '/notificaciones-admin', label: 'Notificaciones', ic: 'bell', roles: ['EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/audit', label: 'Auditoría', ic: 'audit', roles: ['AUDITOR', 'SUPERADMIN'] },
   { href: '/admin-ti', label: 'Admin TI', ic: 'gear', roles: ['EPS_ADMIN', 'SUPERADMIN'] },
 ];
@@ -37,6 +38,7 @@ const TITLES: Record<string, string> = {
   '/conocimiento': 'Base de conocimiento IA',
   '/agenda': 'Agenda y videollamadas',
   '/mensajes': 'Mensajería (CRM)',
+  '/notificaciones-admin': 'Centro de notificaciones',
   '/callcenter': 'Call Center',
   '/medicamentos': 'Medicación de pacientes',
   '/nutricion': 'Nutrición',

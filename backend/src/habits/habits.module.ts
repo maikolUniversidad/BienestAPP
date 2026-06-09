@@ -84,8 +84,10 @@ export class HabitsService {
     await this.notifications.notify({
       userId,
       type: 'ACHIEVEMENT',
+      category: 'achievement',
       title: '🏅 ¡Nuevo logro desbloqueado!',
       body: `Ganaste la carta "${card.name}" por tu constancia (${streak} días). ¡Sigue así!`,
+      href: '/logros',
       data: { cardCode: card.code },
     });
   }

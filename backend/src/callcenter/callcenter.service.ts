@@ -175,8 +175,8 @@ export class CallcenterService {
     await this.audit.log({ actorId: operatorId, action: 'callcenter.dispatch.create', resource: `EmergencyDispatch:${dispatch.id}`, metadata: { caseId, type: dto.type } });
     const label = dto.type === 'ambulance' ? 'Una ambulancia va en camino' : dto.type === 'home_visit' ? 'Se programó una visita domiciliaria' : 'Activamos seguimiento por telemetría';
     await this.notifications.notify({
-      userId, type: NotificationType.CALLCENTER, title: 'Asistencia en camino',
-      body: `${label}. Mantén tu teléfono disponible.`, data: { kind: 'dispatch', dispatchId: dispatch.id, type: dto.type },
+      userId, type: NotificationType.CALLCENTER, category: 'dispatch', title: 'Asistencia en camino',
+      body: `${label}. Mantén tu teléfono disponible.`, href: '/', data: { kind: 'dispatch', dispatchId: dispatch.id, type: dto.type },
     });
     return dispatch;
   }

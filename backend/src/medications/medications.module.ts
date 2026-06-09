@@ -195,8 +195,10 @@ export class MedicationsService {
     await this.notifications.notify({
       userId,
       type: 'REMINDER',
+      category: 'medication',
       title: '💊 Nuevo medicamento en tu plan',
       body: `Se agregó ${dto.name} (${dto.dose}) a tus horarios: ${dto.schedule.join(', ')}.`,
+      href: '/medicacion',
       data: { itemId: item.id },
     });
     return item;

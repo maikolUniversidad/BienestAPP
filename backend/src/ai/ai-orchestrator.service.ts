@@ -243,6 +243,37 @@ export class AiOrchestratorService {
     return result;
   }
 
+  /** Estimación nutricional a partir de una foto (visión). Registro de decisión incluido. */
+  async estimateNutritionFromImage(imageUrl: string, hint?: { mealType?: string; note?: string }) {
+    const result = await this.llm.estimateNutritionFromImage(imageUrl, hint);
+    await this.prisma.aiDecisionLog.create({
+      data: {
+        inputHash: this.guardrails.hashForLog(imageUrl),
+        riskLevel: RiskLevel.NONE,
+        ruleMatches: [],
+        promptVersion: 'nutrition_vision@1.0.0',
+        model: this.llm.modelName,
+        outputSummary: `~${result.calories ?? '?'} kcal${result.vision ? ' (visión)' : ' (heurística)'}`,
+        action: AiAction.NORMAL,
+        validatorResult: 'PASS',
+      },
+    });
+    return result;
+  }
+
+  /** Frase motivadora corta para el resumen diario de nutrición. */
+  async nutritionMotivator(summary: string): Promise<string> {
+    try {
+      const raw = await this.llm.chat([
+        { role: 'system', content: 'Eres un acompañante de bienestar. Da UNA sola frase BREVE (máx 18 palabras), cálida y motivadora sobre la alimentación del día. Sin diagnosticar ni regañar. Español cercano.' },
+        { role: 'user', content: summary },
+      ]);
+      return this.validator.validate(raw).content;
+    } catch {
+      return 'Cada elección cuenta. Hoy diste un paso por tu bienestar. 💛';
+    }
+  }
+
   /**
    * Mensaje breve, cálido y motivador basado en lo que la persona escribió en el diario.
    * Pasa por validación de salida. NO se envía en modo crisis (eso lo maneja analyzeJournal).

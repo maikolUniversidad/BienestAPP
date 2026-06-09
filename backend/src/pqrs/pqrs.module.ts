@@ -53,8 +53,10 @@ export class PqrsService {
       await this.notifications.notify({
         userId: p.userId,
         type: 'SYSTEM',
+        category: 'pqrs',
         title: 'Respuesta a tu PQRS',
         body: `Tu "${p.subject}" fue actualizada a estado: ${p.status}.`,
+        href: '/pqrs',
         data: { pqrsId: p.id },
       });
     }

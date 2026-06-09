@@ -27,6 +27,7 @@ export class LlmProvider {
   private readonly logger = new Logger(LlmProvider.name);
   private readonly provider = process.env.AI_PROVIDER ?? 'mock';
   private readonly model = process.env.AI_MODEL ?? 'deepseek-chat';
+  private readonly visionModel = process.env.AI_VISION_MODEL ?? this.model;
   private readonly baseUrl = process.env.AI_BASE_URL ?? 'https://api.deepseek.com';
   private readonly apiKey = process.env.AI_API_KEY ?? '';
 
@@ -111,6 +112,66 @@ export class LlmProvider {
     } catch {
       return { items: [], calories: null, macros: null };
     }
+  }
+
+  /**
+   * Estima nutrición a partir de una FOTO de la comida (modelo de visión, OpenAI-compatible).
+   * Si el proveedor/modelo no soporta visión o falla, degrada a una estimación heurística por tipo de comida.
+   */
+  async estimateNutritionFromImage(imageUrl: string, hint?: { mealType?: string; note?: string }): Promise<{
+    items: { name: string; confidence: number }[];
+    calories: number | null;
+    macros: { protein: number; carbs: number; fat: number } | null;
+    mealTypeGuess?: string;
+    vision: boolean;
+  }> {
+    if (this.provider === 'mock' || !this.apiKey) return { ...this.heuristicNutrition(hint?.mealType), vision: false };
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.CHAT_TIMEOUT_MS);
+    try {
+      const sys =
+        'Eres un estimador nutricional APROXIMADO (no diagnóstico) que analiza una FOTO de comida. ' +
+        'Identifica los alimentos visibles y estima porciones. Responde EXCLUSIVAMENTE con JSON válido: ' +
+        '{"items":[{"name":string,"confidence":number}],"calories":number,"macros":{"protein":number,"carbs":number,"fat":number},"mealTypeGuess":"desayuno|merienda|almuerzo|onces|cena|espontanea"}. ' +
+        'Calorías en kcal y macros en gramos, valores aproximados.';
+      const userContent: any[] = [
+        { type: 'text', text: hint?.note ? `Contexto del usuario: ${hint.note}` : 'Analiza esta comida.' },
+        { type: 'image_url', image_url: { url: imageUrl } },
+      ];
+      const res = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.apiKey}` },
+        body: JSON.stringify({
+          model: this.visionModel,
+          messages: [{ role: 'system', content: sys }, { role: 'user', content: userContent }],
+          temperature: 0.2, max_tokens: 400, stream: false, response_format: { type: 'json_object' },
+        }),
+        signal: controller.signal,
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+      const j = JSON.parse(data.choices?.[0]?.message?.content ?? '{}');
+      return {
+        items: Array.isArray(j.items) ? j.items.slice(0, 12) : [],
+        calories: typeof j.calories === 'number' ? Math.round(j.calories) : null,
+        macros: j.macros ?? null,
+        mealTypeGuess: typeof j.mealTypeGuess === 'string' ? j.mealTypeGuess : undefined,
+        vision: true,
+      };
+    } catch (e) {
+      this.logger.warn(`Visión nutricional no disponible (${(e as Error).message}); usando estimación heurística.`);
+      return { ...this.heuristicNutrition(hint?.mealType), vision: false };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /** Estimación de respaldo por tipo de comida cuando no hay visión disponible. */
+  private heuristicNutrition(mealType?: string) {
+    const KCAL: Record<string, number> = { desayuno: 420, merienda: 200, almuerzo: 650, onces: 230, cena: 500, espontanea: 300 };
+    const calories = KCAL[mealType ?? ''] ?? 400;
+    const macros = { protein: Math.round(calories * 0.2 / 4), carbs: Math.round(calories * 0.5 / 4), fat: Math.round(calories * 0.3 / 9) };
+    return { items: [{ name: 'comida (estimación aproximada)', confidence: 0.3 }], calories, macros, mealTypeGuess: mealType };
   }
 
   /** Resumen breve y empático de un conjunto de textos (diario, semana). */

@@ -68,8 +68,10 @@ export class GoalsService {
       await this.notifications.notify({
         userId,
         type: 'ACHIEVEMENT',
+        category: 'goal_completed',
         title: '🎯 ¡Meta completada!',
         body: `Lograste tu meta "${after.title}". Cada paso cuenta. 🎉`,
+        href: '/metas',
         data: { goalId: after.id },
       });
     }

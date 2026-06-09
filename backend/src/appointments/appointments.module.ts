@@ -61,15 +61,17 @@ export class AppointmentsService {
     await this.notifications.notify({
       userId: appt.affiliateId,
       type: NotificationType.REMINDER,
+      category: 'appointment',
       title: 'Tienes una cita agendada',
       body: `Tu ${modalidad} está programada para el ${when}.`,
+      href: '/citas',
       data: { kind: 'appointment', appointmentId: appt.id, scheduledAt: appt.scheduledAt, modality: appt.modality },
     });
     if (appt.professionalId && appt.professionalId !== creatorId) {
       await this.notifications.notify({
         userId: appt.professionalId, type: NotificationType.SYSTEM,
-        title: 'Cita asignada', body: `Tienes una ${modalidad} el ${when}.`,
-        data: { kind: 'appointment', appointmentId: appt.id },
+        category: 'appointment', title: 'Cita asignada', body: `Tienes una ${modalidad} el ${when}.`,
+        href: '/agenda', data: { kind: 'appointment', appointmentId: appt.id },
       });
     }
     return appt;

@@ -170,8 +170,24 @@ export const api = {
     request('/habits', { method: 'POST', body: JSON.stringify({ name, icon }) }),
   logHabit: (id: string) => request(`/habits/${id}/log`, { method: 'POST', body: '{}' }),
   foodList: () => request<any[]>('/food'),
-  analyzeFood: (description: string) =>
-    request<any>('/food/analyze', { method: 'POST', body: JSON.stringify({ description }) }),
+  foodUploadUrl: (_kind: 'image' | 'audio', ext: string) =>
+    request<{ path: string; token: string }>('/food/upload-url', { method: 'POST', body: JSON.stringify({ ext }) }),
+  analyzeFoodPhoto: (imagePath: string, mealType?: string, note?: string) =>
+    request<any>('/food/analyze-photo', { method: 'POST', body: JSON.stringify({ imagePath, mealType, note }) }),
+  foodDailySummary: () => request<any>('/food/daily-summary'),
+  // Salud: metas y medidas corporales
+  healthTargets: () => request<any[]>('/health/targets'),
+  setHealthTarget: (body: { type: string; target: number; unit: string; note?: string }) =>
+    request<any>('/health/targets', { method: 'PUT', body: JSON.stringify(body) }),
+  healthBody: () => request<any>('/health/body'),
+  // Notificaciones (admin)
+  notifOverview: () => request<any>('/notifications/admin/overview'),
+  notifCategories: () => request<any[]>('/notifications/admin/categories'),
+  createNotifCategory: (body: any) => request<any>('/notifications/admin/categories', { method: 'POST', body: JSON.stringify(body) }),
+  updateNotifCategory: (key: string, body: any) => request<any>(`/notifications/admin/categories/${key}`, { method: 'PUT', body: JSON.stringify(body) }),
+  broadcastNotif: (body: any) => request<{ sent: number }>('/notifications/admin/broadcast', { method: 'POST', body: JSON.stringify(body) }),
+  analyzeFood: (description: string, mealType?: string, note?: string) =>
+    request<any>('/food/analyze', { method: 'POST', body: JSON.stringify({ description, mealType, note }) }),
   pet: () => request<any>('/pet'),
   savePet: (name: string, species: string) =>
     request('/pet', { method: 'POST', body: JSON.stringify({ name, species }) }),
