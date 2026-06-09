@@ -35,6 +35,11 @@ class GlosaUpdateDto {
   @IsOptional() @IsString() status?: string;
   @IsOptional() @IsString() response?: string;
 }
+class PaymentDto {
+  @IsNumber() amount: number;
+  @IsOptional() @IsString() method?: string;
+  @IsOptional() @IsString() reference?: string;
+}
 
 @Injectable()
 export class FacturacionService {
@@ -81,10 +86,22 @@ export class FacturacionService {
   }
 
   async get(id: string) {
-    const inv = await this.prisma.invoice.findUnique({ where: { id }, include: { lines: true, glosas: { orderBy: { createdAt: 'desc' } } } });
+    const inv = await this.prisma.invoice.findUnique({ where: { id }, include: { lines: true, glosas: { orderBy: { createdAt: 'desc' } }, payments: { orderBy: { createdAt: 'desc' } } } });
     if (!inv) throw new NotFoundException();
     const prof = await this.prisma.affiliateProfile.findUnique({ where: { userId: inv.userId }, select: { firstName: true, lastName: true, documentNumber: true } });
-    return { ...inv, patientName: prof ? `${prof.firstName} ${prof.lastName}` : inv.userId, patientDocument: prof?.documentNumber ?? null };
+    const paid = inv.payments.reduce((s, p) => s + p.amount, 0);
+    return { ...inv, patientName: prof ? `${prof.firstName} ${prof.lastName}` : inv.userId, patientDocument: prof?.documentNumber ?? null, paid, balance: Math.round(inv.total - paid) };
+  }
+
+  /** Registra un pago; ajusta el estado a pagada/parcial según el saldo. */
+  async addPayment(invoiceId: string, by: string, dto: PaymentDto) {
+    const inv = await this.prisma.invoice.findUnique({ where: { id: invoiceId }, include: { payments: true } });
+    if (!inv) throw new NotFoundException();
+    await this.prisma.invoicePayment.create({ data: { invoiceId, amount: dto.amount, method: dto.method, reference: dto.reference, createdBy: by } });
+    const paid = inv.payments.reduce((s, p) => s + p.amount, 0) + dto.amount;
+    const status = paid >= inv.total ? 'paid' : paid > 0 ? 'partial' : inv.status;
+    await this.prisma.invoice.update({ where: { id: invoiceId }, data: { status } });
+    return { paid, balance: Math.round(inv.total - paid), status };
   }
 
   /** Reemplaza las líneas de la factura y recalcula el total (para fijar valores/tarifas). */
@@ -123,19 +140,29 @@ export class FacturacionService {
     return this.prisma.glosa.update({ where: { id }, data: { status: dto.status, response: dto.response } });
   }
 
-  // ───────── Cartera (CxC) ─────────
+  // ───────── Cartera (CxC) con edades ─────────
   async cartera() {
-    const invoices = await this.prisma.invoice.findMany({ select: { status: true, total: true, insurerName: true } });
+    const invoices = await this.prisma.invoice.findMany({ include: { payments: { select: { amount: true } } } });
     const byStatus: Record<string, { count: number; total: number }> = {};
     const byInsurer: Record<string, number> = {};
+    const aging = { d0_30: 0, d31_60: 0, d61_90: 0, d90: 0 };
     let pendiente = 0;
+    const now = Date.now();
     for (const i of invoices) {
       byStatus[i.status] = byStatus[i.status] || { count: 0, total: 0 };
       byStatus[i.status].count++; byStatus[i.status].total += i.total;
-      if (i.status !== 'paid') { pendiente += i.total; byInsurer[i.insurerName || 'Sin aseguradora'] = (byInsurer[i.insurerName || 'Sin aseguradora'] || 0) + i.total; }
+      const paid = i.payments.reduce((s, p) => s + p.amount, 0);
+      const saldo = i.total - paid;
+      if (saldo > 0 && i.status !== 'paid') {
+        pendiente += saldo;
+        byInsurer[i.insurerName || 'Sin aseguradora'] = (byInsurer[i.insurerName || 'Sin aseguradora'] || 0) + saldo;
+        const ref = i.radicadoDate || i.issueDate || i.createdAt;
+        const days = Math.floor((now - new Date(ref).getTime()) / 86400000);
+        if (days <= 30) aging.d0_30 += saldo; else if (days <= 60) aging.d31_60 += saldo; else if (days <= 90) aging.d61_90 += saldo; else aging.d90 += saldo;
+      }
     }
     const glosasOpen = await this.prisma.glosa.aggregate({ where: { status: { in: ['open', 'answered'] } }, _sum: { value: true }, _count: true });
-    return { byStatus, byInsurer, pendiente, glosasAbiertas: { count: glosasOpen._count, value: glosasOpen._sum.value ?? 0 } };
+    return { byStatus, byInsurer, pendiente, aging, glosasAbiertas: { count: glosasOpen._count, value: glosasOpen._sum.value ?? 0 } };
   }
 }
 
@@ -160,6 +187,8 @@ export class FacturacionController {
   @Get('invoices/:id/rips')
   @Header('Content-Type', 'application/json; charset=utf-8')
   rips(@Param('id') id: string) { return this.svc.rips(id); }
+  @Post('invoices/:id/payments')
+  addPayment(@Param('id') id: string, @CurrentUser('id') by: string, @Body() dto: PaymentDto) { return this.svc.addPayment(id, by, dto); }
   @Post('invoices/:id/glosas')
   addGlosa(@Param('id') id: string, @Body() dto: GlosaDto) { return this.svc.addGlosa(id, dto); }
   @Patch('glosas/:id')

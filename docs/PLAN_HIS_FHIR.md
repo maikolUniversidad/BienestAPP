@@ -48,8 +48,8 @@ Leyenda: ✅ hecho · 🟡 parcial/base · ⬜ pendiente.
 - 🟡 **Generación RIPS JSON – Resolución 2275/2023** (estructura numFactura+usuarios+servicios{consultas/procedimientos/medicamentos} generada y descargable; pendiente: validación de catálogos CUPS/CUM/CIE-10 y malla del MinSalud).
 - ✅ **Administración de cuentas** (armado de cuenta por encuentro: consulta + órdenes → líneas, total, estados borrador/emitida/radicada/pagada).
 - ✅ **Gestión de glosas** (registro por factura, valor, ciclo abierta/respondida/aceptada/conciliada). Pendiente: catálogo oficial de códigos.
-- ⬜ **Gestión de inventarios** (medicamentos e insumos, lotes, vencimientos, kardex).
-- 🟡 **Cartera (CxC)** (resumen pendiente por estado/aseguradora y glosas abiertas; pendiente: edades de cartera, pagos parciales, conciliación).
+- ✅ **Gestión de inventarios** (medicamentos e insumos, lotes, vencimientos, movimientos entrada/salida/ajuste, alertas de bajo stock y vencimiento). Pendiente: kardex valorizado y dispensación ligada a la orden.
+- ✅ **Cartera (CxC)** (saldo pendiente por estado/aseguradora, **edades de cartera** 0-30/31-60/61-90/+90, **pagos** totales/parciales con cambio de estado). Pendiente: conciliación con EPS.
 
 ## Fase 3 — Reportes asistenciales y regulatorios (Colombia)
 

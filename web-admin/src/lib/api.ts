@@ -226,9 +226,19 @@ export const api = {
   facSetStatus: (id: string, status: string) => request<any>(`/facturacion/invoices/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   facUpdateLines: (id: string, lines: any[]) => request<any>(`/facturacion/invoices/${id}/lines`, { method: 'PATCH', body: JSON.stringify({ lines }) }),
   facRips: (id: string) => request<any>(`/facturacion/invoices/${id}/rips`),
+  facAddPayment: (id: string, body: any) => request<any>(`/facturacion/invoices/${id}/payments`, { method: 'POST', body: JSON.stringify(body) }),
   facAddGlosa: (id: string, body: any) => request<any>(`/facturacion/invoices/${id}/glosas`, { method: 'POST', body: JSON.stringify(body) }),
   facUpdateGlosa: (id: string, body: any) => request<any>(`/facturacion/glosas/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   facCartera: () => request<any>('/facturacion/cartera'),
+  // Inventario
+  invItems: (kind?: string, q?: string) => {
+    const p = new URLSearchParams(); if (kind) p.set('kind', kind); if (q) p.set('q', q);
+    const s = p.toString(); return request<any[]>(`/inventario/items${s ? '?' + s : ''}`);
+  },
+  invSave: (id: string | null, body: any) => id ? request<any>(`/inventario/items/${id}`, { method: 'PATCH', body: JSON.stringify(body) }) : request<any>('/inventario/items', { method: 'POST', body: JSON.stringify(body) }),
+  invDelete: (id: string) => request(`/inventario/items/${id}`, { method: 'DELETE' }),
+  invMovement: (id: string, body: any) => request<any>(`/inventario/items/${id}/movement`, { method: 'POST', body: JSON.stringify(body) }),
+  invAlerts: () => request<any>('/inventario/alerts'),
 
   gestionFhir: (userId: string) => request<any>(`/gestion/fhir/patient/${userId}`),
   gestionHl7: async (userId: string) => {

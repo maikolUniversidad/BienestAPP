@@ -18,6 +18,7 @@ export default function Facturacion() {
   const [inv, setInv] = useState<any>(null);
   const [lines, setLines] = useState<any[]>([]);
   const [glosa, setGlosa] = useState({ code: '', description: '', value: '' });
+  const [pay, setPay] = useState({ amount: '', method: 'transferencia' });
   const [msg, setMsg] = useState<string | null>(null);
   function flash(m: string) { setMsg(m); setTimeout(() => setMsg(null), 3000); }
 
@@ -47,6 +48,11 @@ export default function Facturacion() {
     setGlosa({ code: '', description: '', value: '' }); flash('Glosa registrada ✓'); open(inv.id); loadCartera();
   }
   async function glosaStatus(id: string, status: string) { await api.facUpdateGlosa(id, { status }).catch(() => undefined); open(inv.id); loadCartera(); }
+  async function addPayment() {
+    if (!inv || !Number(pay.amount)) return flash('Ingresa el valor del pago.');
+    await api.facAddPayment(inv.id, { amount: Number(pay.amount), method: pay.method }).catch(() => undefined);
+    setPay({ amount: '', method: 'transferencia' }); flash('Pago registrado ✓'); open(inv.id); loadList(); loadCartera();
+  }
 
   const total = lines.reduce((s, l) => s + (Number(l.quantity) || 1) * (Number(l.unitValue) || 0), 0);
 
@@ -62,6 +68,17 @@ export default function Facturacion() {
           <div className="card stat"><div className="lbl">Radicadas</div><div className="val">{money(cartera.byStatus?.radicada?.total || 0)}</div></div>
           <div className="card stat"><div className="lbl">Pagadas</div><div className="val">{money(cartera.byStatus?.paid?.total || 0)}</div></div>
           <div className="card stat"><div className="lbl">Glosas abiertas</div><div className="val">{money(cartera.glosasAbiertas?.value || 0)}</div></div>
+        </div>
+      )}
+      {cartera?.aging && (
+        <div className="card" style={{ marginBottom: 16 }}>
+          <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>Edades de cartera (saldo pendiente)</div>
+          <div className="scroll-x-mobile" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <span className="badge" style={{ background: 'var(--salvia)', color: '#fff' }}>0–30 días: {money(cartera.aging.d0_30)}</span>
+            <span className="badge" style={{ background: 'var(--azul)', color: '#fff' }}>31–60: {money(cartera.aging.d31_60)}</span>
+            <span className="badge" style={{ background: 'var(--ambar)', color: '#fff' }}>61–90: {money(cartera.aging.d61_90)}</span>
+            <span className="badge" style={{ background: 'var(--sos)', color: '#fff' }}>+90: {money(cartera.aging.d90)}</span>
+          </div>
         </div>
       )}
 
@@ -119,6 +136,18 @@ export default function Facturacion() {
                 <button className="btn btn-ghost btn-sm" onClick={() => setStatus('issued')}>Emitir</button>
                 <button className="btn btn-ghost btn-sm" onClick={() => setStatus('radicada')}>Radicar</button>
                 <button className="btn btn-ghost btn-sm" onClick={() => setStatus('paid')}>Marcar pagada</button>
+              </div>
+
+              {/* Pagos */}
+              <h4 style={{ margin: '16px 0 8px', color: 'var(--tinta)', fontFamily: 'Fraunces' }}>Pagos — saldo {money(inv.balance ?? (inv.total - (inv.paid || 0)))}</h4>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                <input className="field" style={{ marginTop: 0, width: 120 }} type="number" value={pay.amount} onChange={(e) => setPay({ ...pay, amount: e.target.value })} placeholder="Valor" />
+                <select className="field" style={{ marginTop: 0, width: 'auto' }} value={pay.method} onChange={(e) => setPay({ ...pay, method: e.target.value })}><option value="transferencia">Transferencia</option><option value="efectivo">Efectivo</option><option value="nota credito">Nota crédito</option><option value="otro">Otro</option></select>
+                <button className="btn btn-primary btn-sm" onClick={addPayment}>Registrar pago</button>
+              </div>
+              <div style={{ display: 'grid', gap: 4, marginTop: 8 }}>
+                {(inv.payments ?? []).map((p: any) => <div key={p.id} style={{ fontSize: 13 }}>{money(p.amount)} · {p.method} <span className="muted">{new Date(p.createdAt).toLocaleDateString('es-CO')}</span></div>)}
+                {(inv.payments ?? []).length === 0 && <p className="muted" style={{ fontSize: 13 }}>Sin pagos.</p>}
               </div>
 
               {/* Glosas */}

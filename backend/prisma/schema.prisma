@@ -1105,9 +1105,57 @@ model Invoice {
   updatedAt    DateTime      @updatedAt
   lines        InvoiceLine[]
   glosas       Glosa[]
+  payments     InvoicePayment[]
 
   @@index([userId])
   @@index([status])
+}
+
+/// Pago (total o parcial) recibido sobre una factura.
+model InvoicePayment {
+  id        String   @id @default(cuid())
+  invoiceId String
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount    Float
+  method    String? // transferencia | efectivo | nota credito | otro
+  reference String?
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  @@index([invoiceId])
+}
+
+/// Ítem de inventario (medicamento o insumo) con lote y vencimiento.
+model InventoryItem {
+  id           String              @id @default(cuid())
+  kind         String              @default("medicamento") // medicamento | insumo
+  code         String? // CUM / CUPS
+  name         String
+  unit         String? // unidad | caja | ampolla
+  stock        Float               @default(0)
+  reorderLevel Float               @default(0)
+  lot          String?
+  expiryDate   DateTime?
+  location     String?
+  active       Boolean             @default(true)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  movements    InventoryMovement[]
+
+  @@index([kind])
+}
+
+model InventoryMovement {
+  id        String        @id @default(cuid())
+  itemId    String
+  item      InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  type      String // in | out | adjust
+  quantity  Float
+  reason    String?
+  createdBy String?
+  createdAt DateTime      @default(now())
+
+  @@index([itemId, createdAt])
 }
 
 model InvoiceLine {
