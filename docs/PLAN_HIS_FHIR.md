@@ -44,12 +44,12 @@ Leyenda: ✅ hecho · 🟡 parcial/base · ⬜ pendiente.
 - ⬜ **Hospitalización** (camas, censo diario, traslados, alta).
 - ✅ **Admisiones de pacientes** (base con `Encounter`; falta flujo de ingreso/egreso y autorizaciones).
 - ✅ **Administración de contratos con EPS/aseguradoras** (Fase 0).
-- ⬜ **Facturación electrónica de servicios de salud** (DIAN: factura electrónica + anexo salud; cargos por servicio/tarifa ISS/SOAT).
-- ⬜ **Generación RIPS JSON – Resolución 2275/2023** (AC, AP, AU, AH, AN, AM, AT, US, CT) y validación.
-- ⬜ **Administración de cuentas** (armado de cuenta por paciente/encuentro, soportes).
-- ⬜ **Gestión de glosas** (Res. 3047/2008 y codificación vigente; ciclo objeción/respuesta/conciliación).
+- 🟡 **Facturación electrónica de servicios de salud** (cuenta por encuentro con líneas valorizadas y estados; pendiente: emisión DIAN + CUFE + anexo técnico salud, tarifarios ISS/SOAT).
+- 🟡 **Generación RIPS JSON – Resolución 2275/2023** (estructura numFactura+usuarios+servicios{consultas/procedimientos/medicamentos} generada y descargable; pendiente: validación de catálogos CUPS/CUM/CIE-10 y malla del MinSalud).
+- ✅ **Administración de cuentas** (armado de cuenta por encuentro: consulta + órdenes → líneas, total, estados borrador/emitida/radicada/pagada).
+- ✅ **Gestión de glosas** (registro por factura, valor, ciclo abierta/respondida/aceptada/conciliada). Pendiente: catálogo oficial de códigos.
 - ⬜ **Gestión de inventarios** (medicamentos e insumos, lotes, vencimientos, kardex).
-- ⬜ **Cartera (CxC)** (radicación, edades de cartera, pagos, conciliación con EPS).
+- 🟡 **Cartera (CxC)** (resumen pendiente por estado/aseguradora y glosas abiertas; pendiente: edades de cartera, pagos parciales, conciliación).
 
 ## Fase 3 — Reportes asistenciales y regulatorios (Colombia)
 

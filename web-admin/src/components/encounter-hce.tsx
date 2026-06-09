@@ -39,6 +39,11 @@ export function EncounterHCE({ encounterId, onChanged }: { encounterId: string; 
   }
   async function setOrderStatus(id: string, status: string) { await api.gestionUpdateOrder(id, { status }).catch(() => undefined); load(); }
   async function close() { await api.gestionSetEncounterStatus(encounterId, 'closed').catch(() => undefined); flash('Encuentro cerrado ✓'); load(); onChanged?.(); }
+  async function invoice() {
+    if (!d) return;
+    const inv = await api.facCreateInvoice({ userId: d.encounter.userId, encounterId }).catch(() => null);
+    flash(inv ? `Factura ${inv.number} generada (ve a Facturación para valorarla) ✓` : 'No se pudo generar la factura.');
+  }
 
   if (!d) return <div className="card" style={{ marginTop: 12 }}><p className="muted">Cargando encuentro…</p></div>;
   const e = d.encounter;
@@ -47,7 +52,10 @@ export function EncounterHCE({ encounterId, onChanged }: { encounterId: string; 
     <div className="card" style={{ marginTop: 12, borderLeft: '4px solid var(--azul)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
         <h3 style={{ fontFamily: 'Fraunces', color: 'var(--tinta)' }}>HCE · {e.type.replace('_', ' ')} <span className="status">{e.status}</span></h3>
-        {e.status !== 'closed' && <button className="btn btn-ghost btn-sm" onClick={close}>Cerrar encuentro</button>}
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button className="btn btn-ghost btn-sm" onClick={invoice}>🧾 Generar factura</button>
+          {e.status !== 'closed' && <button className="btn btn-ghost btn-sm" onClick={close}>Cerrar encuentro</button>}
+        </div>
       </div>
       {msg && <div className="disclaimer-bar" style={{ background: '#E3F3EE', color: 'var(--salvia-deep)', marginTop: 8 }}>{msg}</div>}
 

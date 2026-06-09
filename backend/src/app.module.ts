@@ -42,6 +42,7 @@ import { AppointmentsModule } from './appointments/appointments.module';
 import { DocumentsModule } from './documents/documents.module';
 import { ChatModule } from './chat/chat.module';
 import { GestionSaludModule } from './gestion/gestion.module';
+import { FacturacionModule } from './facturacion/facturacion.module';
 
 @Module({
   imports: [
@@ -81,6 +82,7 @@ import { GestionSaludModule } from './gestion/gestion.module';
     DocumentsModule,
     ChatModule,
     GestionSaludModule,
+    FacturacionModule,
   ],
   controllers: [AppController],
   providers: [

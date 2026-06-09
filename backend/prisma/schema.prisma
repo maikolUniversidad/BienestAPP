@@ -1087,6 +1087,60 @@ model Diagnosis {
   @@index([userId])
 }
 
+/// Factura de servicios de salud (cuenta) por paciente/encuentro.
+model Invoice {
+  id           String        @id @default(cuid())
+  number       String        @unique
+  userId       String
+  encounterId  String?
+  contractId   String?
+  insurerName  String?
+  status       String        @default("draft") // draft | issued | radicada | partial | paid | rejected
+  issueDate    DateTime?
+  radicadoDate DateTime?
+  total        Float         @default(0)
+  notes        String?
+  createdBy    String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  lines        InvoiceLine[]
+  glosas       Glosa[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model InvoiceLine {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  kind        String // consulta | procedimiento | medicamento | insumo | otros
+  code        String? // CUPS / CUM
+  description String
+  quantity    Int     @default(1)
+  unitValue   Float   @default(0)
+  total       Float   @default(0)
+  cie10       String?
+
+  @@index([invoiceId])
+}
+
+/// Glosa (objeción) sobre una factura — Res. 3047 / ciclo de auditoría de cuentas.
+model Glosa {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  code        String // código de glosa
+  description String
+  value       Float    @default(0)
+  status      String   @default("open") // open | answered | accepted | conciliated
+  response    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([invoiceId])
+}
+
 /// Orden médica: laboratorio, imágenes, medicamento, procedimiento o remisión.
 model ClinicalOrder {
   id          String   @id @default(cuid())
