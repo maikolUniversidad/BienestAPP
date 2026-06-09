@@ -33,3 +33,14 @@ export const uploadChatFile = (file: Blob, kind: 'image' | 'audio', ext: string)
 
 export const uploadAvatar = (file: Blob, ext: string) =>
   uploadVia(api.profileAvatarUrl, file, 'image', ext);
+
+/** Sube un documento (PDF/doc/txt) para la base de conocimiento y devuelve su ruta. */
+export const uploadKnowledgeFile = async (file: Blob, ext: string): Promise<{ path: string }> => {
+  if (!supabase) throw new Error('Almacenamiento no configurado');
+  const { path, token } = await api.knowledgeUploadUrl(ext);
+  const { error } = await supabase.storage.from(bucket).uploadToSignedUrl(path, token, file, {
+    contentType: file.type || 'application/octet-stream',
+  });
+  if (error) throw error;
+  return { path };
+};

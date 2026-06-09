@@ -247,3 +247,34 @@ audio { width: 100%; }
 /* Avatar de perfil */
 .avatar { width: 64px; height: 64px; border-radius: 18px; object-fit: cover; background: var(--durazno); }
 .avatar-lg { width: 92px; height: 92px; border-radius: 24px; object-fit: cover; }
+
+/* ───────────── Modo oscuro ─────────────
+   Remapeamos la paleta: --tinta pasa a ser texto claro y las superficies se oscurecen.
+   Los acentos (coral, salvia, azul) se conservan. Activado con [data-theme="dark"] en <html>. */
+:root[data-theme="dark"] {
+  --tinta: #E7ECF4;
+  --crema: #0F141B;
+  --niebla: #1A222F;
+  --arena: #2A3340;
+  --gris: #94A1B5;
+  --durazno: #2E2420;
+  --card: #161D28;
+  --bg: #0F141B;
+  --line: #2A3340;
+  --ink: var(--tinta);
+  --ink-2: var(--tinta);
+  --muted: var(--gris);
+  --shadow: 0 8px 28px rgba(0,0,0,.55);
+}
+:root[data-theme="dark"] body { background: var(--bg); color: var(--tinta); }
+:root[data-theme="dark"] .field,
+:root[data-theme="dark"] .mood-btn { background: #1E2735; color: var(--tinta); }
+:root[data-theme="dark"] thead th { background: var(--indigo-700); }
+:root[data-theme="dark"] .auth-wrap { background: radial-gradient(70% 70% at 85% 0%, rgba(255,122,89,.10), transparent 60%), var(--bg); }
+:root[data-theme="dark"] .auth-card,
+:root[data-theme="dark"] .topbar { background: var(--card); }
+:root[data-theme="dark"] img.avatar, :root[data-theme="dark"] .avatar { background: var(--durazno); }
+
+/* Conmutador de tema */
+.theme-toggle { display: inline-flex; align-items: center; gap: 8px; background: var(--niebla); border: 1px solid var(--line); color: var(--tinta); border-radius: 999px; padding: 8px 14px; font-weight: 600; cursor: pointer; font-size: 13px; }
+.theme-toggle:hover { border-color: var(--coral); }

@@ -11,6 +11,7 @@ class UpdateProfileDto {
   @IsOptional() @IsString() phone?: string;
   @IsOptional() @IsString() @MaxLength(280) bio?: string;
   @IsOptional() @IsString() avatarPath?: string;
+  @IsOptional() @IsString() epsCode?: string;
 }
 class PreferencesDto {
   @IsObject() preferences: Record<string, unknown>;
@@ -30,11 +31,17 @@ export class ProfileService {
   async get(userId: string) {
     const p = await this.prisma.affiliateProfile.findUnique({ where: { userId } });
     if (!p) return null;
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { epsCode: true } });
+    const eps = user?.epsCode ? await this.prisma.eps.findUnique({ where: { code: user.epsCode }, select: { name: true } }) : null;
     const avatarUrl = p.avatarPath ? await this.storage.signDownload(p.avatarPath) : null;
-    return { ...p, avatarUrl };
+    return { ...p, avatarUrl, epsCode: user?.epsCode ?? null, epsName: eps?.name ?? null };
   }
-  update(userId: string, dto: UpdateProfileDto) {
-    return this.prisma.affiliateProfile.update({ where: { userId }, data: dto });
+  async update(userId: string, dto: UpdateProfileDto) {
+    const { epsCode, ...profileData } = dto;
+    if (epsCode !== undefined) {
+      await this.prisma.user.update({ where: { id: userId }, data: { epsCode: epsCode || null } });
+    }
+    return this.prisma.affiliateProfile.update({ where: { userId }, data: profileData });
   }
   setPreferences(userId: string, prefs: Record<string, unknown>) {
     return this.prisma.affiliateProfile.update({ where: { userId }, data: { preferences: prefs as object } });

@@ -9,6 +9,7 @@ import { detectEmotionTheme } from './risk/emotion-lexicon';
 import { PromptRegistry } from './prompts/prompt-registry';
 import { LlmProvider, LlmMessage } from './llm/llm.provider';
 import { EscalationService, CrisisProtocol } from './escalation/escalation.service';
+import { KnowledgeService } from '../knowledge/knowledge.module';
 
 export interface OrchestratorReply {
   content: string;
@@ -38,6 +39,7 @@ export class AiOrchestratorService {
     private readonly validator: ResponseValidatorService,
     private readonly llm: LlmProvider,
     private readonly escalation: EscalationService,
+    private readonly knowledge: KnowledgeService,
   ) {}
 
   /**
@@ -106,10 +108,15 @@ export class AiOrchestratorService {
       return { content: protocol.containmentMessage, riskLevel: risk.level, emotionalTheme: theme, crisisProtocol: protocol };
     }
 
-    // [3] Prompt seguro + contexto del usuario (integra toda la app) + [4] LLM
+    // [3] Prompt seguro + contexto del usuario (integra toda la app) + RAG institucional + [4] LLM
     const promptSpec = this.prompts.get('psych_companion');
-    const context = await this.buildUserContext(params.userId);
-    const system = `${promptSpec.system}\n\nContexto del usuario (úsalo con tacto para personalizar, no lo recites literal):\n${context}`;
+    const [context, kb] = await Promise.all([
+      this.buildUserContext(params.userId),
+      this.knowledgeContext(params.userId, clean),
+    ]);
+    const system =
+      `${promptSpec.system}\n\nContexto del usuario (úsalo con tacto para personalizar, no lo recites literal):\n${context}` +
+      (kb ? `\n\n${kb}` : '');
     const messages: LlmMessage[] = [
       { role: 'system', content: system },
       ...params.history,
@@ -147,6 +154,16 @@ export class AiOrchestratorService {
     }
 
     return { content: validated.content, riskLevel: risk.level, emotionalTheme: theme };
+  }
+
+  /** Recupera conocimiento institucional (global + EPS del afiliado) relevante a la consulta. */
+  private async knowledgeContext(userId: string, query: string): Promise<string> {
+    try {
+      const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { epsCode: true } });
+      return await this.knowledge.contextBlock(query, user?.epsCode ?? null);
+    } catch {
+      return '';
+    }
   }
 
   /** Resumen compacto del estado del usuario para personalizar el acompañamiento. */

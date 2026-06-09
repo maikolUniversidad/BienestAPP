@@ -60,7 +60,7 @@ export const api = {
     }
     return res;
   },
-  async register(input: { email: string; password: string; firstName: string; lastName: string }) {
+  async register(input: { email: string; password: string; firstName: string; lastName: string; epsCode?: string }) {
     const res = await request<{ accessToken: string; roles: string[] }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(input),
@@ -240,4 +240,20 @@ export const api = {
   ingestHealth: (source: string, metrics: any[], deviceName?: string) =>
     request('/health/metrics', { method: 'POST', body: JSON.stringify({ source, metrics, deviceName }) }),
   healthInterpret: () => request<{ summary: any; interpretation: string }>('/health/interpret'),
+  // EPS (público para el registro)
+  listEps: () => request<{ code: string; name: string }[]>('/knowledge/eps'),
+  // Base de conocimiento RAG (admin)
+  knowledgeSources: (scope?: string, epsCode?: string) => {
+    const q = new URLSearchParams();
+    if (scope) q.set('scope', scope);
+    if (epsCode) q.set('epsCode', epsCode);
+    const s = q.toString();
+    return request<any[]>(`/knowledge/sources${s ? '?' + s : ''}`);
+  },
+  createKnowledgeSource: (body: { scope: string; epsCode?: string; title: string; type: string; url?: string; content?: string; storagePath?: string }) =>
+    request<any>('/knowledge/sources', { method: 'POST', body: JSON.stringify(body) }),
+  reindexKnowledgeSource: (id: string) => request<any>(`/knowledge/sources/${id}/reindex`, { method: 'POST' }),
+  deleteKnowledgeSource: (id: string) => request(`/knowledge/sources/${id}`, { method: 'DELETE' }),
+  knowledgeUploadUrl: (ext: string) =>
+    request<{ path: string; token: string; signedUrl: string }>('/knowledge/upload-url', { method: 'POST', body: JSON.stringify({ ext }) }),
 };

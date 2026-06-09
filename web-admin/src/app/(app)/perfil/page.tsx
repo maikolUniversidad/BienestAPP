@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { api, logout } from '../../../lib/api';
 import { Hilo } from '../../../components/brand';
 import { uploadAvatar } from '../../../lib/storage';
+import { ThemeToggle } from '../../../components/theme-toggle';
 
 const CONSENT_LABEL: Record<string, string> = {
   INFORMED_CONSENT: 'Consentimiento informado',
@@ -25,6 +26,7 @@ export default function Perfil() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [epsList, setEpsList] = useState<{ code: string; name: string }[]>([]);
 
   async function load() {
     setProfile(await api.profile().catch(() => null));
@@ -33,7 +35,12 @@ export default function Perfil() {
     setConsents(await api.consents().catch(() => []));
     setActivity(await api.profileActivity().catch(() => null));
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); api.listEps().then(setEpsList).catch(() => setEpsList([])); }, []);
+
+  async function changeEps(code: string) {
+    await api.updateProfile({ epsCode: code }).catch(() => undefined);
+    setMsg('EPS actualizada ✓'); setTimeout(() => setMsg(null), 2500); load();
+  }
 
   async function onAvatar(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -109,6 +116,33 @@ export default function Perfil() {
             ))}
           </div>
           <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>Tus datos de salud son tuyos: cifrados y bajo tu control (Habeas Data).</p>
+        </div>
+      </div>
+
+      {/* Mi EPS + preferencias */}
+      <div className="grid grid-2" style={{ marginTop: 18 }}>
+        <div className="card">
+          <h3 style={{ fontFamily: 'Fraunces', color: 'var(--tinta)', marginBottom: 6 }}>Mi EPS</h3>
+          <p className="muted" style={{ fontSize: 13, marginBottom: 10 }}>
+            Tu EPS nos permite asistirte con sus trámites, citas, autorizaciones y servicios desde el asistente.
+          </p>
+          <select className="field" style={{ marginTop: 0 }} value={profile?.epsCode ?? ''} onChange={(e) => changeEps(e.target.value)} aria-label="EPS">
+            <option value="" disabled>Selecciona tu EPS…</option>
+            {epsList.map((e) => <option key={e.code} value={e.code}>{e.name}</option>)}
+          </select>
+          {profile?.epsName && <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>Actual: <b style={{ color: 'var(--tinta)' }}>{profile.epsName}</b></p>}
+        </div>
+
+        <div className="card">
+          <h3 style={{ fontFamily: 'Fraunces', color: 'var(--tinta)', marginBottom: 6 }}>Apariencia y conexiones</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--line)' }}>
+            <span style={{ fontSize: 14 }}>Tema de la aplicación</span>
+            <ThemeToggle />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0' }}>
+            <span style={{ fontSize: 14 }}>Salud y wearables</span>
+            <Link className="btn btn-ghost btn-sm" href="/salud">Conectar dispositivos →</Link>
+          </div>
         </div>
       </div>
 

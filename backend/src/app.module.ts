@@ -36,6 +36,7 @@ import { ClinicalModule } from './clinical/clinical.module';
 import { PqrsModule } from './pqrs/pqrs.module';
 import { CommunityModule } from './community/community.module';
 import { HealthModule } from './health/health.module';
+import { KnowledgeModule } from './knowledge/knowledge.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { HealthModule } from './health/health.module';
     PqrsModule,
     CommunityModule,
     HealthModule,
+    KnowledgeModule,
   ],
   controllers: [AppController],
   providers: [

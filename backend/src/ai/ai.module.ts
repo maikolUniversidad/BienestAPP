@@ -7,8 +7,10 @@ import { RiskClassifierService } from './risk/risk-classifier.service';
 import { PromptRegistry } from './prompts/prompt-registry';
 import { LlmProvider } from './llm/llm.provider';
 import { EscalationService } from './escalation/escalation.service';
+import { KnowledgeModule } from '../knowledge/knowledge.module';
 
 @Module({
+  imports: [KnowledgeModule],
   controllers: [AiController],
   providers: [
     AiOrchestratorService,

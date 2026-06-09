@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Viewport } from 'next';
 import { PwaRegister } from '../components/pwa-register';
+import { THEME_INIT_SCRIPT } from '../components/theme-toggle';
 
 export const metadata = {
   title: 'BienestAPP — Bienestar & Panel',
@@ -20,6 +21,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body>
         {children}
         <PwaRegister />

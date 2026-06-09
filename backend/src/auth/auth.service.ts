@@ -33,6 +33,7 @@ export class AuthService {
       data: {
         email: dto.email,
         passwordHash,
+        epsCode: dto.epsCode || null,
         roles: { create: { roleId: affiliateRole.id } },
         profile: {
           create: {

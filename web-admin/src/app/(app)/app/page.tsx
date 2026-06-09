@@ -113,7 +113,7 @@ export default function AffiliateHome() {
             <h3 style={{ fontFamily: 'Fraunces', fontSize: 22, marginBottom: 6 }}>Tu asistente está aquí</h3>
             <p style={{ color: '#CBD4E8', fontSize: 14, marginBottom: 14 }}>Disponible para escucharte sin juzgar, con IA segura.</p>
             <div style={S.aiQuote}>«Te leo. ¿Cómo te sientes con tu proceso hasta ahora?»</div>
-            <Link className="btn" href="/asistente" style={{ background: '#fff', color: 'var(--tinta)', width: '100%', justifyContent: 'center', marginTop: 14 }}>Hablar con el asistente</Link>
+            <Link className="btn" href="/asistente" style={{ background: 'var(--card)', color: 'var(--tinta)', width: '100%', justifyContent: 'center', marginTop: 14 }}>Hablar con el asistente</Link>
             <p style={{ color: '#8FA0C0', fontSize: 11, marginTop: 10 }}>🛡️ Conversación privada y confidencial</p>
           </div>
         </div>
@@ -229,7 +229,7 @@ export default function AffiliateHome() {
         </div>
 
         <div className="card" style={{ background: 'var(--durazno)', borderColor: 'transparent' }}>
-          <div style={{ width: 48, height: 48, background: '#fff', borderRadius: 14, display: 'grid', placeItems: 'center', marginBottom: 12, fontSize: 22 }}>❝</div>
+          <div style={{ width: 48, height: 48, background: 'var(--card)', borderRadius: 14, display: 'grid', placeItems: 'center', marginBottom: 12, fontSize: 22 }}>❝</div>
           <h3 style={S.h3}>Pensamiento del día</h3>
           <p style={{ fontStyle: 'italic', color: 'var(--tinta)', lineHeight: 1.6, marginTop: 8 }}>“{reflection}”</p>
         </div>
@@ -244,7 +244,7 @@ export default function AffiliateHome() {
         <div className="grid grid-4">
           {content.slice(0, 4).map((c) => (
             <Link key={c.id} href="/biblioteca" className="card hover" style={{ padding: 0, overflow: 'hidden' }}>
-              <div style={{ height: 90, background: 'linear-gradient(135deg, var(--tinta), var(--indigo-700))', display: 'grid', placeItems: 'center', color: '#fff', fontSize: 30 }}>
+              <div style={{ height: 90, background: 'linear-gradient(135deg, #1B2A4A, #27406B)', display: 'grid', placeItems: 'center', color: '#fff', fontSize: 30 }}>
                 {{ breathing: '🌬️', meditation: '🧘', active_break: '🤸', gratitude: '🙏', education: '📚' }[c.type as string] ?? '🧩'}
               </div>
               <div style={{ padding: 16 }}>
@@ -276,8 +276,8 @@ function MiniStat({ tone, ic, title, value, note }: { tone: string; ic: string; 
 }
 function QuickAction({ href, ic, label }: { href: string; ic: string; label: string }) {
   return (
-    <Link href={href} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 12, border: '1px solid var(--line)', background: '#fff' }}>
-      <span style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--tinta)', color: '#fff', display: 'grid', placeItems: 'center' }}><Ico k={ic} size={18} /></span>
+    <Link href={href} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 12, border: '1px solid var(--line)', background: 'var(--card)' }}>
+      <span style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--secondary)', color: '#fff', display: 'grid', placeItems: 'center' }}><Ico k={ic} size={18} /></span>
       <span style={{ fontWeight: 600, color: 'var(--tinta)' }}>{label}</span>
     </Link>
   );
@@ -303,17 +303,17 @@ const S: Record<string, React.CSSProperties> = {
   h3: { fontFamily: 'Fraunces', fontSize: 19, color: 'var(--tinta)' },
   stepStar: { width: 52, height: 52, borderRadius: 16, background: 'var(--coral)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 22 },
   stepBox: { display: 'flex', gap: 18, alignItems: 'flex-start', background: 'var(--durazno)', borderRadius: 16, padding: 22, margin: '16px 0' },
-  stepIcon: { width: 64, height: 64, background: '#fff', borderRadius: 16, display: 'grid', placeItems: 'center', flexShrink: 0 },
+  stepIcon: { width: 64, height: 64, background: 'var(--card)', borderRadius: 16, display: 'grid', placeItems: 'center', flexShrink: 0 },
   aiCard: { background: 'linear-gradient(150deg, #27406B, #1B2A4A)', color: '#fff', position: 'relative', overflow: 'hidden', border: 0 },
   aiBlob: { position: 'absolute', top: -60, right: -60, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,122,89,.18)' },
   aiIcon: { width: 64, height: 64, background: 'rgba(255,255,255,.15)', borderRadius: 18, display: 'grid', placeItems: 'center', margin: '0 auto 14px' },
   aiQuote: { background: 'rgba(255,255,255,.12)', borderRadius: 14, padding: 14, fontStyle: 'italic', fontSize: 14 },
   journeyIcon: { width: 60, height: 60, borderRadius: 18, display: 'grid', placeItems: 'center', margin: '0 auto 10px' },
-  habitRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderRadius: 14, border: '1px solid var(--line)', background: '#fff' },
+  habitRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderRadius: 14, border: '1px solid var(--line)', background: 'var(--card)' },
   habitIcon: { width: 42, height: 42, borderRadius: 12, color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18 },
   barTrack: { height: 10, background: 'var(--niebla)', borderRadius: 999, overflow: 'hidden' },
   wbBox: { marginTop: 18, background: 'var(--durazno)', borderRadius: 16, padding: 18 },
   helpCard: { background: '#FBEAE8', borderColor: 'rgba(200,69,59,.3)' },
-  helpIcon: { width: 56, height: 56, background: '#fff', borderRadius: 16, display: 'grid', placeItems: 'center', fontSize: 24, flexShrink: 0 },
-  crisisLine: { background: '#fff', borderRadius: 14, padding: '12px 18px', textAlign: 'center' },
+  helpIcon: { width: 56, height: 56, background: 'var(--card)', borderRadius: 16, display: 'grid', placeItems: 'center', fontSize: 24, flexShrink: 0 },
+  crisisLine: { background: 'var(--card)', borderRadius: 14, padding: '12px 18px', textAlign: 'center' },
 };

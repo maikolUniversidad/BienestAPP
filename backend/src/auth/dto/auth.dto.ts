@@ -17,6 +17,10 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   documentNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  epsCode?: string;
 }
 
 export class LoginDto {

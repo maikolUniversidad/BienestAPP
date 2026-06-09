@@ -115,7 +115,14 @@ export default function Salud() {
   async function toggleNative(key: string) {
     const c = connOf(key);
     if (c && c.status === 'connected') await api.healthDisconnect(key).catch(() => undefined);
-    else await api.healthConnect(key).catch(() => undefined);
+    else {
+      await api.healthConnect(key).catch(() => undefined);
+      // Si corre dentro del wrapper nativo (Capacitor), dispara la sincronización real.
+      const bridge = (typeof window !== 'undefined' && (window as any).bienestappSyncHealth) as undefined | (() => Promise<void>);
+      if (bridge && (key === 'apple_health' || key === 'health_connect')) {
+        try { await bridge(); } catch { /* el wrapper maneja permisos */ }
+      }
+    }
     reload();
   }
 

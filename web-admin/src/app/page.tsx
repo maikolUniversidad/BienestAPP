@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { Hilo } from '../components/brand';
 
@@ -19,8 +19,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState('Bienestar123');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [epsCode, setEpsCode] = useState('nueva_eps');
+  const [epsList, setEpsList] = useState<{ code: string; name: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => { api.listEps().then(setEpsList).catch(() => setEpsList([])); }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,7 +32,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       if (mode === 'register') {
-        await api.register({ email: email.trim(), password, firstName: firstName.trim(), lastName: lastName.trim() });
+        await api.register({ email: email.trim(), password, firstName: firstName.trim(), lastName: lastName.trim(), epsCode });
         window.location.href = '/bienvenida';
         return;
       }
@@ -63,6 +67,11 @@ export default function LoginPage() {
           <>
             <input className="field" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Nombre" />
             <input className="field" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Apellido" />
+            <select className="field" value={epsCode} onChange={(e) => setEpsCode(e.target.value)} aria-label="EPS a la que perteneces">
+              {epsList.length === 0 && <option value="nueva_eps">Nueva EPS</option>}
+              {epsList.map((e) => <option key={e.code} value={e.code}>{e.name}</option>)}
+            </select>
+            <p className="muted" style={{ fontSize: 11, margin: '2px 0 0' }}>Tu EPS nos permite asistirte con sus trámites y servicios.</p>
           </>
         )}
         <input className="field" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Correo" />

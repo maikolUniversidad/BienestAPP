@@ -63,7 +63,7 @@ export default function Encuestas() {
                 </div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
                   {q.options.map((o, oi) => (
-                    <span key={oi} style={{ display: 'flex', gap: 4, alignItems: 'center', background: '#fff', borderRadius: 8, padding: '4px 6px', border: '1px solid var(--line)' }}>
+                    <span key={oi} style={{ display: 'flex', gap: 4, alignItems: 'center', background: 'var(--card)', borderRadius: 8, padding: '4px 6px', border: '1px solid var(--line)' }}>
                       <input style={{ width: 90, border: 0, outline: 'none' }} value={o.label} onChange={(e) => setOpt(i, oi, 'label', e.target.value)} />
                       <input style={{ width: 36, border: 0, outline: 'none', color: 'var(--muted)' }} type="number" value={o.value} onChange={(e) => setOpt(i, oi, 'value', e.target.value)} />
                     </span>

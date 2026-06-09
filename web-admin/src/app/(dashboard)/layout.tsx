@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { getRoles, logout } from '../../lib/api';
 import { Hilo, Ico } from '../../components/brand';
 import { NotificationsBell } from '../../components/notifications-bell';
+import { ThemeToggle } from '../../components/theme-toggle';
 
 const NAV = [
   { href: '/overview', label: 'Resumen', ic: 'dashboard', roles: ['EPS_ADMIN', 'SUPERADMIN', 'AUDITOR'] },
@@ -19,6 +20,7 @@ const NAV = [
   { href: '/encuestas', label: 'Encuestas', ic: 'tests', roles: ['EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/comunidad-admin', label: 'Comunidad', ic: 'comunidad', roles: ['EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/pqrs-gestion', label: 'PQRS', ic: 'pqrs', roles: ['EPS_ADMIN', 'SUPERADMIN'] },
+  { href: '/conocimiento', label: 'Base de conocimiento IA', ic: 'kb', roles: ['EPS_ADMIN', 'SUPERADMIN'] },
   { href: '/audit', label: 'Auditoría', ic: 'audit', roles: ['AUDITOR', 'SUPERADMIN'] },
   { href: '/admin-ti', label: 'Admin TI', ic: 'gear', roles: ['EPS_ADMIN', 'SUPERADMIN'] },
 ];
@@ -30,6 +32,7 @@ const TITLES: Record<string, string> = {
   '/encuestas': 'Encuestas y quices',
   '/comunidad-admin': 'Comunidad',
   '/admin-ti': 'Administración TI',
+  '/conocimiento': 'Base de conocimiento IA',
   '/callcenter': 'Call Center',
   '/medicamentos': 'Medicación de pacientes',
   '/nutricion': 'Nutrición',
@@ -76,6 +79,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <header className="topbar">
           <h1>{title}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <ThemeToggle />
             <NotificationsBell />
             <button className="icon-btn" onClick={logout}>Salir</button>
           </div>

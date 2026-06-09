@@ -50,11 +50,29 @@ export class StorageService implements OnModuleInit {
     return { path, token: data.token, signedUrl: data.signedUrl };
   }
 
+  /** URL firmada de subida para documentos de la base de conocimiento (PDF/doc/txt). */
+  async signDocUpload(userId: string, ext: string) {
+    if (!this.client) throw new Error('Almacenamiento no disponible');
+    const safeExt = (ext || 'bin').replace(/[^a-z0-9]/gi, '').slice(0, 5) || 'bin';
+    const path = `kb/${userId}/${randomUUID()}.${safeExt}`;
+    const { data, error } = await this.client.storage.from(this.bucket).createSignedUploadUrl(path);
+    if (error) throw error;
+    return { path, token: data.token, signedUrl: data.signedUrl };
+  }
+
   /** URL firmada de lectura (temporal) para mostrar el archivo. */
   async signDownload(path: string, expiresIn = 3600): Promise<string | null> {
     if (!this.client) return null;
     const { data } = await this.client.storage.from(this.bucket).createSignedUrl(path, expiresIn);
     return data?.signedUrl ?? null;
+  }
+
+  /** Descarga el contenido binario de un archivo del bucket (para extraer texto de PDFs/documentos). */
+  async downloadBuffer(path: string): Promise<Buffer | null> {
+    if (!this.client) return null;
+    const { data, error } = await this.client.storage.from(this.bucket).download(path);
+    if (error || !data) return null;
+    return Buffer.from(await data.arrayBuffer());
   }
 
   /** Firma una lista de adjuntos [{type, path}] devolviendo también su URL temporal. */

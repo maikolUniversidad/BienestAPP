@@ -62,8 +62,10 @@ Apple Watch/Apple Salud y Google Fit/Health Connect **solo** se leen desde una a
 con permisos del SO. La PWA marca la preferencia; una app contenedora ligera empuja los
 datos al mismo endpoint `POST /health/metrics`. Opciones de implementación:
 
-### Opción A — Capacitor (recomendada: reusa la PWA)
-Envuelve la PWA existente y usa plugins de salud:
+### Opción A — Capacitor (IMPLEMENTADO: `mobile/capacitor/`)
+Wrapper listo en `mobile/capacitor/` que reusa la PWA y añade HealthKit/Health Connect.
+Ver `mobile/capacitor/README.md` y `mobile/capacitor/src/health-sync.ts` (sincroniza al
+mismo `POST /health/metrics`). Plugins de salud:
 
 ```bash
 npm i @capacitor/core @capacitor/ios @capacitor/android

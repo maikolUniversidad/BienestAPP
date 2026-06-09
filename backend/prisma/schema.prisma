@@ -164,6 +164,7 @@ model User {
   status         UserStatus @default(ACTIVE)
   mfaEnabled     Boolean    @default(false)
   mfaSecret      String? // SENSITIVE
+  epsCode        String? // EPS prestadora a la que pertenece el afiliado (ver model Eps)
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
@@ -715,4 +716,57 @@ model AuditLog {
 
   @@index([actorId, createdAt])
   @@index([action, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// EPS prestadoras + Base de conocimiento RAG para el asistente IA
+// ─────────────────────────────────────────────────────────────
+
+/// Catálogo de EPS. El afiliado elige la suya en el registro (User.epsCode → Eps.code).
+/// La IA usa la base de conocimiento de su EPS para asistir trámites y servicios.
+model Eps {
+  code      String   @id // p.ej. "nueva_eps"
+  name      String
+  nit       String?
+  active    Boolean  @default(true)
+  brandHex  String? // color principal aproximado para co-branding
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Una fuente de conocimiento: enlace, PDF, documento o texto. scope=global aplica a
+/// todos; scope=eps aplica solo a afiliados de esa EPS.
+model KnowledgeSource {
+  id          String   @id @default(cuid())
+  scope       String   @default("global") // global | eps
+  epsCode     String? // requerido cuando scope=eps
+  title       String
+  type        String // link | pdf | doc | text
+  url         String? // para enlaces o archivos descargables
+  storagePath String? // ruta en Supabase Storage (archivos subidos)
+  status      String   @default("ready") // pending | processing | ready | error
+  error       String?
+  chunkCount  Int      @default(0)
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  chunks KnowledgeChunk[]
+
+  @@index([scope, epsCode])
+}
+
+/// Fragmento indexable de una fuente (recuperación léxica top-K para el contexto de la IA).
+model KnowledgeChunk {
+  id        String          @id @default(cuid())
+  sourceId  String
+  source    KnowledgeSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  scope     String          @default("global")
+  epsCode   String?
+  ord       Int
+  content   String
+  createdAt DateTime        @default(now())
+
+  @@index([scope, epsCode])
+  @@index([sourceId])
 }
