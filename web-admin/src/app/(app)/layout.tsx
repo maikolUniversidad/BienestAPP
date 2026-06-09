@@ -17,6 +17,7 @@ const NAV = [
   { href: '/metas', label: 'Metas', ic: 'metas', primary: false },
   { href: '/alimentacion', label: 'Alimentación', ic: 'food', primary: false },
   { href: '/biblioteca', label: 'Biblioteca', ic: 'biblioteca', primary: false },
+  { href: '/tests', label: 'Tests', ic: 'tests', primary: false },
   { href: '/logros', label: 'Logros', ic: 'logros', primary: false },
   { href: '/pqrs', label: 'PQRS', ic: 'pqrs', primary: false },
   { href: '/perfil', label: 'Perfil', ic: 'user', primary: false },

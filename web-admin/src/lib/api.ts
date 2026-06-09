@@ -99,6 +99,20 @@ export const api = {
   adminPqrs: () => request<any[]>('/admin/pqrs'),
   managePqrs: (id: string, patch: { status?: string; response?: string }) =>
     request(`/admin/pqrs/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
+  // Director / Admin TI
+  director: () => request<any>('/admin/director'),
+  rbac: () => request<any>('/admin/rbac'),
+  // Encuestas/Quices (admin builder)
+  adminTests: () => request<any[]>('/admin/tests'),
+  createTest: (t: { title: string; category: string; description?: string; questions: any[] }) =>
+    request('/admin/tests', { method: 'POST', body: JSON.stringify(t) }),
+  toggleTest: (id: string, active: boolean) =>
+    request(`/admin/tests/${id}`, { method: 'PATCH', body: JSON.stringify({ active }) }),
+  // Tests (afiliado responder)
+  tests: () => request<any[]>('/tests'),
+  test: (id: string) => request<any>(`/tests/${id}`),
+  submitTest: (id: string, answers: Record<string, number>) =>
+    request<any>(`/tests/${id}/submit`, { method: 'POST', body: JSON.stringify({ answers }) }),
   // Medicación (profesional)
   medProPatients: () => request<any[]>('/medications/pro/patients'),
   medProAlerts: () => request<any[]>('/medications/pro/alerts'),

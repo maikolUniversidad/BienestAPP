@@ -1,14 +1,25 @@
-import { Body, Controller, Get, Injectable, Module, NotFoundException, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Injectable, Module, NotFoundException, Param, Patch, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { RiskLevel, RiskSource } from '@prisma/client';
-import { IsObject } from 'class-validator';
+import { RiskLevel, RiskSource, RoleName } from '@prisma/client';
+import { IsArray, IsBoolean, IsObject, IsOptional, IsString, MaxLength } from 'class-validator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { AiModule } from '../ai/ai.module';
 import { EscalationService, CrisisProtocol } from '../ai/escalation/escalation.service';
 
 class SubmitTestDto {
   @IsObject() answers: Record<string, number>; // { questionId: value }
+}
+
+class CreateTestDto {
+  @IsString() @MaxLength(120) title: string;
+  @IsString() @MaxLength(60) category: string;
+  @IsOptional() @IsString() @MaxLength(300) description?: string;
+  @IsArray() questions: { id: string; text: string; options: { label: string; value: number }[] }[];
+}
+class ToggleTestDto {
+  @IsBoolean() active: boolean;
 }
 
 @Injectable()
@@ -72,6 +83,47 @@ export class TestsService {
     };
   }
 
+  // ─────────────── Constructor (admin) ───────────────
+
+  listAll() {
+    return this.prisma.wellnessTest.findMany({
+      orderBy: { code: 'asc' },
+      select: { id: true, code: true, title: true, category: true, active: true, questions: true },
+    });
+  }
+
+  async createTest(dto: CreateTestDto) {
+    const slug = dto.title.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '_').slice(0, 28);
+    const code = `${slug}_${Date.now().toString(36)}`.slice(0, 40);
+    let maxScore = 0;
+    for (const q of dto.questions) {
+      const vals = (q.options ?? []).map((o) => Number(o.value) || 0);
+      maxScore += vals.length ? Math.max(...vals) : 0;
+    }
+    const scoring = {
+      bands: [
+        { max: Math.floor(maxScore * 0.33), band: 'estable' },
+        { max: Math.floor(maxScore * 0.66), band: 'atención' },
+        { max: maxScore, band: 'cuidado' },
+      ],
+    };
+    return this.prisma.wellnessTest.create({
+      data: {
+        code,
+        title: dto.title,
+        description: dto.description ?? '',
+        category: dto.category,
+        questions: dto.questions as object,
+        scoring: scoring as object,
+        active: true,
+      },
+    });
+  }
+
+  toggleActive(id: string, active: boolean) {
+    return this.prisma.wellnessTest.update({ where: { id }, data: { active } });
+  }
+
   private recommend(band: string): string[] {
     if (band === 'cuidado') return ['Conectar con el call center', 'Ejercicio de respiración', 'Contactar a alguien de confianza'];
     if (band === 'atención') return ['Pausa activa', 'Diario de gratitud', 'Rutina de sueño'];
@@ -98,9 +150,29 @@ export class TestsController {
   }
 }
 
+@ApiTags('tests-admin')
+@Controller('admin/tests')
+@Roles(RoleName.EPS_ADMIN, RoleName.SUPERADMIN)
+export class TestsAdminController {
+  constructor(private readonly tests: TestsService) {}
+
+  @Get()
+  list() {
+    return this.tests.listAll();
+  }
+  @Post()
+  create(@Body() dto: CreateTestDto) {
+    return this.tests.createTest(dto);
+  }
+  @Patch(':id')
+  toggle(@Param('id') id: string, @Body() dto: ToggleTestDto) {
+    return this.tests.toggleActive(id, dto.active);
+  }
+}
+
 @Module({
   imports: [AiModule],
-  controllers: [TestsController],
+  controllers: [TestsController, TestsAdminController],
   providers: [TestsService],
 })
 export class TestsModule {}

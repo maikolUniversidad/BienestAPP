@@ -91,6 +91,47 @@ export class AdminService {
     return { ok: true, email: dto.email, id: user.id };
   }
 
+  /** Dashboard de Director: KPIs institucionales agregados. */
+  async director() {
+    const roles = Object.values(RoleName);
+    const [usersByRoleArr, riskArr, pqrsArr, base] = await Promise.all([
+      Promise.all(roles.map(async (r) => ({ role: r, count: await this.prisma.userRole.count({ where: { role: { name: r } } }) }))),
+      Promise.all(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'NONE'].map(async (l) => ({ level: l, count: await this.prisma.riskAssessment.count({ where: { level: l as any } }) }))),
+      Promise.all(['new', 'in_progress', 'resolved'].map(async (s) => ({ status: s, count: await this.prisma.pqrs.count({ where: { status: s } }) }))),
+      this.metrics(),
+    ]);
+    const pendingReview = await this.prisma.riskAssessment.count({ where: { level: { in: ['HIGH', 'CRITICAL'] }, reviewedByHuman: false } });
+    return {
+      ...base,
+      usersByRole: usersByRoleArr.filter((x) => x.count > 0),
+      riskDistribution: riskArr,
+      pqrsByStatus: pqrsArr,
+      pendingReview,
+    };
+  }
+
+  /** Admin TI: roles, permisos y usuarios por rol. */
+  async rbac() {
+    const roles = await this.prisma.role.findMany({
+      include: { permissions: { include: { permission: true } }, _count: { select: { users: true } } },
+      orderBy: { name: 'asc' },
+    });
+    const modules = [
+      'Diario', 'Asistente IA', 'SOS / Crisis', 'Call Center', 'Medicación', 'Clínico',
+      'Hábitos', 'Metas', 'Nutrición', 'Logros', 'Tests/Encuestas', 'PQRS', 'Notificaciones',
+      'Gestión de usuarios', 'Auditoría',
+    ];
+    return {
+      roles: roles.map((r) => ({
+        name: r.name,
+        description: r.description,
+        userCount: r._count.users,
+        permissions: r.permissions.map((p) => p.permission.key),
+      })),
+      modules,
+    };
+  }
+
   async bulkCreate(users: { email: string; firstName: string; lastName: string; role: string }[]) {
     const valid = Object.values(RoleName) as string[];
     const results: any[] = [];
@@ -127,6 +168,18 @@ export class AdminController {
   @Roles(RoleName.AUDITOR, RoleName.SUPERADMIN)
   auditLog(@Query('action') action?: string) {
     return this.audit.query({ action });
+  }
+
+  @Get('director')
+  @Roles(RoleName.EPS_ADMIN, RoleName.SUPERADMIN)
+  director() {
+    return this.admin.director();
+  }
+
+  @Get('rbac')
+  @Roles(RoleName.EPS_ADMIN, RoleName.SUPERADMIN)
+  rbac() {
+    return this.admin.rbac();
   }
 
   @Get('users')
