@@ -41,6 +41,9 @@ export const uploadFoodPhoto = (file: Blob, ext: string) =>
 export const uploadDocPhoto = (file: Blob, ext: string) =>
   uploadVia(api.docsUploadUrl, file, 'image', ext);
 
+export const uploadChatP2P = (file: Blob, kind: 'image' | 'audio' | 'document', ext: string) =>
+  uploadVia(api.chatUploadUrl, file, kind, ext);
+
 /** Sube un documento (PDF/doc/txt) para la base de conocimiento y devuelve su ruta. */
 export const uploadKnowledgeFile = async (file: Blob, ext: string): Promise<{ path: string }> => {
   if (!supabase) throw new Error('Almacenamiento no configurado');

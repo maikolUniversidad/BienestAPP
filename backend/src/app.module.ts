@@ -40,6 +40,7 @@ import { KnowledgeModule } from './knowledge/knowledge.module';
 import { CrmModule } from './crm/crm.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { DocumentsModule } from './documents/documents.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { DocumentsModule } from './documents/documents.module';
     CrmModule,
     AppointmentsModule,
     DocumentsModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [

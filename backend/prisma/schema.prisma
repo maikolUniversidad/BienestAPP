@@ -954,3 +954,45 @@ model SignedDocument {
   @@index([userId, status])
   @@index([appointmentId])
 }
+
+// ─────────────────────────────────────────────────────────────
+// Chat persona-a-persona entre roles (pacientes, call center, médicos, etc.)
+// ─────────────────────────────────────────────────────────────
+
+model ChatThread {
+  id            String            @id @default(cuid())
+  kind          String            @default("direct") // direct | group
+  title         String? // para grupos
+  directKey     String?           @unique // clave determinística "a:b" para 1:1 (dedupe)
+  createdBy     String?
+  lastMessageAt DateTime          @default(now())
+  createdAt     DateTime          @default(now())
+  participants  ChatParticipant[]
+  messages      ChatMessage[]
+
+  @@index([lastMessageAt])
+}
+
+model ChatParticipant {
+  id         String     @id @default(cuid())
+  threadId   String
+  thread     ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  userId     String
+  lastReadAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  @@unique([threadId, userId])
+  @@index([userId])
+}
+
+model ChatMessage {
+  id          String     @id @default(cuid())
+  threadId    String
+  thread      ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderId    String
+  body        String?
+  attachments Json? // [{type:'image'|'audio'|'document', path, name?}]
+  createdAt   DateTime   @default(now())
+
+  @@index([threadId, createdAt])
+}

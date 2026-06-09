@@ -17,6 +17,7 @@ const CATS: { key: string; label: string; description: string; type: Notificatio
   { key: 'achievement', label: 'Logros', description: 'Logros y cartas desbloqueadas.', type: NotificationType.ACHIEVEMENT, level: 3, icon: '🏅', href: '/logros' },
   { key: 'pqrs', label: 'PQRS', description: 'Respuestas a peticiones y reclamos.', type: NotificationType.SYSTEM, level: 2, icon: '📨', href: '/pqrs' },
   { key: 'document', label: 'Documentos y firmas', description: 'Documentos por firmar y firmas registradas.', type: NotificationType.SYSTEM, level: 2, icon: '✍️', href: '/documentos' },
+  { key: 'chat', label: 'Mensajes de chat', description: 'Mensajes entre pacientes y el equipo de salud.', type: NotificationType.SYSTEM, level: 2, icon: '💬', href: '/mensajes-chat' },
   { key: 'broadcast', label: 'Comunicados', description: 'Mensajes y campañas enviadas por el administrador.', type: NotificationType.SYSTEM, level: 3, icon: '📢', href: '/', broadcastable: true },
   { key: 'system', label: 'Sistema', description: 'Avisos generales del sistema.', type: NotificationType.SYSTEM, level: 3, icon: 'ℹ️', broadcastable: true },
 ];

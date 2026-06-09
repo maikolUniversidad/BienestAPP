@@ -187,6 +187,18 @@ export const api = {
   updateNotifCategory: (key: string, body: any) => request<any>(`/notifications/admin/categories/${key}`, { method: 'PUT', body: JSON.stringify(body) }),
   broadcastNotif: (body: any) => request<{ sent: number }>('/notifications/admin/broadcast', { method: 'POST', body: JSON.stringify(body) }),
 
+  // ---- Chat persona a persona ----
+  chatContacts: (q?: string) => request<any[]>(`/chat/contacts${q ? '?q=' + encodeURIComponent(q) : ''}`),
+  chatThreads: () => request<any[]>('/chat/threads'),
+  chatUnread: () => request<{ count: number }>('/chat/unread'),
+  chatOpenDirect: (targetId: string) => request<{ id: string }>('/chat/direct', { method: 'POST', body: JSON.stringify({ targetId }) }),
+  chatCreateGroup: (participantIds: string[], title?: string) => request<{ id: string }>('/chat/group', { method: 'POST', body: JSON.stringify({ participantIds, title }) }),
+  chatMessages: (threadId: string, since?: string) => request<any[]>(`/chat/threads/${threadId}/messages${since ? '?since=' + encodeURIComponent(since) : ''}`),
+  chatSend: (threadId: string, body: string, attachments?: any[]) => request<any>(`/chat/threads/${threadId}/messages`, { method: 'POST', body: JSON.stringify({ body, attachments }) }),
+  chatRead: (threadId: string) => request(`/chat/threads/${threadId}/read`, { method: 'POST' }),
+  chatUploadUrl: (kind: 'image' | 'audio' | 'document', ext: string) =>
+    request<{ path: string; token: string }>('/chat/upload-url', { method: 'POST', body: JSON.stringify({ kind, ext }) }),
+
   // ---- Gestión documental / firma digital ----
   docsMine: () => request<{ signed: any[]; pending: any[]; pendingAttendance: any[] }>('/documents/mine'),
   docsPendingCount: () => request<{ count: number }>('/documents/pending-count'),
