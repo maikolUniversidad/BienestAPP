@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { logout, api } from '../../lib/api';
 import { Hilo, Ico } from '../../components/brand';
+import { NotificationsBell } from '../../components/notifications-bell';
 
 const NAV = [
   { href: '/app', label: 'Inicio', ic: 'inicio', primary: true },
@@ -67,8 +68,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="main">
         <header className="topbar">
           <h1>Hola 👋</h1>
-          <a className="link desktop-only" href="https://bienest-landing.vercel.app" target="_blank" rel="noreferrer">Ver landing ↗</a>
-          <button className="icon-btn mobile-only" onClick={() => setMenu(true)} aria-label="Menú">☰ Menú</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <NotificationsBell />
+            <a className="link desktop-only" href="https://bienest-landing.vercel.app" target="_blank" rel="noreferrer">Ver landing ↗</a>
+            <button className="icon-btn mobile-only" onClick={() => setMenu(true)} aria-label="Menú">☰</button>
+          </div>
         </header>
         <div className="content">{children}</div>
       </div>

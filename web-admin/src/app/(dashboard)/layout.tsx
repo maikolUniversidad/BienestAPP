@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getRoles, logout } from '../../lib/api';
 import { Hilo, Ico } from '../../components/brand';
+import { NotificationsBell } from '../../components/notifications-bell';
 
 const NAV = [
   { href: '/overview', label: 'Resumen', ic: 'dashboard', roles: ['EPS_ADMIN', 'SUPERADMIN', 'AUDITOR'] },
@@ -58,8 +59,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="main">
         <header className="topbar">
           <h1>{title}</h1>
-          <a className="link desktop-only" href="https://bienest-landing.vercel.app" target="_blank" rel="noreferrer">Ver landing ↗</a>
-          <button className="icon-btn mobile-only" onClick={logout}>Salir</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <NotificationsBell />
+            <button className="icon-btn" onClick={logout}>Salir</button>
+          </div>
         </header>
         <div className="content">{children}</div>
       </div>

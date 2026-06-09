@@ -24,6 +24,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { AdminModule } from './admin/admin.module';
 import { AuditModule } from './audit/audit.module';
 import { StorageModule } from './storage/storage.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { FoodModule } from './food/food.module';
 import { ExerciseModule } from './exercise/exercise.module';
 import { TestsModule } from './tests/tests.module';
@@ -39,6 +40,7 @@ import { MedicationsModule } from './medications/medications.module';
     PrismaModule,
     AuditModule,
     StorageModule,
+    NotificationsModule,
     AuthModule,
     ProfileModule,
     ConsentModule,

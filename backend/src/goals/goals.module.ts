@@ -13,6 +13,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.module';
 
 const TYPES = ['emotional', 'habit', 'physical', 'sleep', 'nutrition', 'other'];
 const FREQS = ['daily', 'weekly', 'once'];
@@ -31,7 +32,10 @@ class UpdateGoalDto {
 
 @Injectable()
 export class GoalsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   list(userId: string) {
     return this.prisma.goal.findMany({
@@ -53,12 +57,23 @@ export class GoalsService {
   }
 
   async update(userId: string, id: string, dto: UpdateGoalDto) {
+    const before = await this.prisma.goal.findFirst({ where: { id, userId } });
     const status = dto.progress === 100 ? 'completed' : dto.status;
     await this.prisma.goal.updateMany({
       where: { id, userId },
       data: { title: dto.title, progress: dto.progress, status },
     });
-    return this.prisma.goal.findFirst({ where: { id, userId } });
+    const after = await this.prisma.goal.findFirst({ where: { id, userId } });
+    if (after && after.status === 'completed' && before?.status !== 'completed') {
+      await this.notifications.notify({
+        userId,
+        type: 'ACHIEVEMENT',
+        title: '🎯 ¡Meta completada!',
+        body: `Lograste tu meta "${after.title}". Cada paso cuenta. 🎉`,
+        data: { goalId: after.id },
+      });
+    }
+    return after;
   }
 
   remove(userId: string, id: string) {

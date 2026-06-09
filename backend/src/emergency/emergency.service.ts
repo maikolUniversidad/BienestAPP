@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { EmergencyType, RiskLevel } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.module';
 import { SosDto } from './dto/sos.dto';
 
 /** Prioridad del caso según el tipo de emergencia. */
@@ -26,6 +27,7 @@ export class EmergencyService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /** Botón SOS → crea ticket + caso de call center priorizado. */
@@ -50,6 +52,13 @@ export class EmergencyService {
       action: 'emergency.sos.created',
       resource: `EmergencyTicket:${ticket.id}`,
       metadata: { type: dto.type, hasLocation: dto.latitude != null },
+    });
+    await this.notifications.notify({
+      userId,
+      type: 'CALLCENTER',
+      title: 'Tu solicitud de ayuda fue registrada',
+      body: 'Un operador te atenderá pronto. Si es una emergencia vital, llama al 123 o a la Línea 106.',
+      data: { ticketId: ticket.id },
     });
 
     return {

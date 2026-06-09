@@ -13,6 +13,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { IsInt, IsOptional, IsString } from 'class-validator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.module';
 
 class CreateHabitDto {
   @IsString() name: string;
@@ -22,7 +23,10 @@ class CreateHabitDto {
 
 @Injectable()
 export class HabitsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   list(userId: string) {
     return this.prisma.habit.findMany({ where: { userId, active: true } });
@@ -72,10 +76,17 @@ export class HabitsService {
     if (!code) return;
     const card = await this.prisma.achievementCard.findUnique({ where: { code } });
     if (!card) return;
-    await this.prisma.userAchievementCard.upsert({
+    const already = await this.prisma.userAchievementCard.findUnique({
       where: { userId_cardId: { userId, cardId: card.id } },
-      update: {},
-      create: { userId, cardId: card.id },
+    });
+    if (already) return;
+    await this.prisma.userAchievementCard.create({ data: { userId, cardId: card.id } });
+    await this.notifications.notify({
+      userId,
+      type: 'ACHIEVEMENT',
+      title: '🏅 ¡Nuevo logro desbloqueado!',
+      body: `Ganaste la carta "${card.name}" por tu constancia (${streak} días). ¡Sigue así!`,
+      data: { cardCode: card.code },
     });
   }
 }

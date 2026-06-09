@@ -17,6 +17,7 @@ import { Public } from '../common/decorators/public.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.module';
 
 // Catálogo orientativo (no requiere tabla). Para el selector al agregar medicación.
 const CATALOG = [
@@ -54,6 +55,7 @@ export class MedicationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   listItems(userId: string) {
@@ -189,6 +191,13 @@ export class MedicationsService {
       action: 'medication.assigned',
       resource: `MedicationItem:${item.id}`,
       metadata: { patient: userId, name: dto.name, dose: dto.dose },
+    });
+    await this.notifications.notify({
+      userId,
+      type: 'REMINDER',
+      title: '💊 Nuevo medicamento en tu plan',
+      body: `Se agregó ${dto.name} (${dto.dose}) a tus horarios: ${dto.schedule.join(', ')}.`,
+      data: { itemId: item.id },
     });
     return item;
   }

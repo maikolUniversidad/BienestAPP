@@ -44,6 +44,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
 export const api = {
   apiUrl: API_URL,
+  // Notificaciones
+  notifications: () => request<any[]>('/notifications'),
+  unreadCount: () => request<{ count: number }>('/notifications/unread-count'),
+  markNotifRead: (id: string) => request(`/notifications/${id}/read`, { method: 'PATCH' }),
+  markAllNotifRead: () => request('/notifications/read-all', { method: 'POST' }),
   async login(email: string, password: string) {
     const res = await request<{ accessToken: string; roles: string[] }>('/auth/login', {
       method: 'POST',
